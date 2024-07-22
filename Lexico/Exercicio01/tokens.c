@@ -8,15 +8,24 @@
 // Matriz que representa a transição de estados
 int estados[][6] = 
 { 
-// 0-9, a-d, e, f-z, +, -
+    // 0-9, a-d, e, f-z, +, -
+    // 0
     {ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO},
+    // 1
     {5, 2, 2, 2, 3, 4},
+    // 2
     {2, 2, 2, 2, ESTADO_INVALIDO, ESTADO_INVALIDO},
+    // 3
     {ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO},
+    // 4
     {ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO},
+    // 5
     {5, ESTADO_INVALIDO, 6, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO},
+    // 6
     {8, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, 7, 7},
+    // 7
     {8, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO},
+    // 8
     {8, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO, ESTADO_INVALIDO}
 };
 
@@ -27,7 +36,9 @@ int estadosFinais[] = {2, 3, 4, 5, 8};
  * @brief Verifica se é estado final
  */
 bool ehEstadoFinal(int estado){
-    for(int i = 0; i < 5; i++){
+    int qtdFinais = sizeof(estadosFinais) / sizeof(int);
+
+    for(int i = 0; i < qtdFinais; i++){
         if(estado == estadosFinais[i]){
             return true;
         }
@@ -48,6 +59,9 @@ void mostrarToken(char *string, int inicio, int fim){
     printf("%s\n", token);
 }
 
+/**
+ * @brief Analisa e classifica uma entrada lida
+ */
 void analisarEntrada(char *entrada, int tamanho){
     int indiceAtual = 0;
     int indiceInicioToken = 0;
