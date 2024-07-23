@@ -96,7 +96,7 @@ void mostrarToken(char *string, int inicio, int fim, int token){
     case 11:
         strcpy(strToken, "comment");
         // Retira o '\n'
-        subString[tamanho - 2] = '\0';
+        subString[tamanho - 1] = '\0';
         break;
     case 12:
         printf("white space\n");
