@@ -8,7 +8,7 @@ OUT = out
 $(shell mkdir -p $(OUT))
 
 # Arquivos .c
-FONTES = main.c
+FONTES = main.c automato.c
 
 # Arquivos .h (iguais os fontes, exceto o main)
 HEADERS = $(filter-out main.h, $(FONTES:.c=.h))
