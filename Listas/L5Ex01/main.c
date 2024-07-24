@@ -69,7 +69,7 @@ void analisarEntrada(char *entrada, int tamanho){
 
     int estadoAtual = ESTADO_INICIAL;
     int proximoEstado = ESTADO_INVALIDO;
-    int ultimoEstadoFinal = ESTADO_INVALIDO;
+    // int ultimoEstadoFinal = ESTADO_INVALIDO;
 
     bool caractereInvalido = false;
 
@@ -130,7 +130,7 @@ void analisarEntrada(char *entrada, int tamanho){
         }else{
             // Marca se é final
             if(ehEstadoFinal(proximoEstado)){
-                ultimoEstadoFinal = proximoEstado;
+                // ultimoEstadoFinal = proximoEstado;
                 indiceFimToken = indiceAtual;
             }
             
@@ -155,7 +155,7 @@ void analisarEntrada(char *entrada, int tamanho){
     
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
     char entrada[200];
 
