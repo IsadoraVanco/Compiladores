@@ -1,3 +1,6 @@
+#ifndef _AUTOMATO_H_
+#define _AUTOMATO_H_
+
 #include <stdbool.h>
 
 /*****************************************************************
@@ -91,3 +94,5 @@ void mostrarToken(char *string, int inicio, int fim);
  * @param tamanho O tamanho da string de entrada
  */
 void analisarEntrada(Automato *automato, char *entrada, int tamanho);
+
+#endif

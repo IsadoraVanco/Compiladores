@@ -5,7 +5,7 @@
 int main()
 {
     // Configura o autômato
-    Automato *automato = criarAutomato(8, 1, 'z');
+    Automato *automato = criarAutomato(8, 1, 255);
 
     adicionarTransicao(automato, 1, 5, '0', '9');
     adicionarTransicao(automato, 1, 2, 'a', 'z');
