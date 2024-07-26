@@ -1,5 +1,7 @@
 # Exercicio 01 - Lista 05
 
+Créditos ao profº Wesley Attrot, autor do exercicio.
+
 Escreva um programa que implementa o seguinte autômato:
 
 ![automato](../Imagens/automato-L5Ex01.png)
