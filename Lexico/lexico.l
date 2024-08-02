@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#define MAX_ID 255
+
 bool existeToken = false;
 int numColunas = 1;
 int numLinhas = 1;
@@ -40,7 +42,7 @@ num_hexa    0[Xx]{hexa}+
 string      ["](\\.|[^\"])*["]
 caracter    ['](.|\\[abfnrtv\'\"?0\\])[']
 
-cmt_linha       [/][/]({letra}|{decimal}|{espaco})*"\n"
+cmt_linha       [/][/](.)*"\n"
 cmt_multi       [/][*]([^*]|\*+[^*/])*[*][/]    
 cmt_multi_ini   [/][*]([^*]|\*+[^*/])*
 
@@ -105,7 +107,7 @@ exit        mostrarToken("EXIT");
 "->"        mostrarToken("POINTER");
 
 {id}        {
-                if(yyleng > 255) {
+                if(yyleng > MAX_ID) {
                     emitirErro(ID_GRANDE);
                 }else{
                     mostrarTokenValor("IDENTIFIER");
@@ -123,7 +125,7 @@ exit        mostrarToken("EXIT");
 {cmt_linha}     numColunas = 1; numLinhas++;
 {nova_linha}    numColunas = 1; numLinhas++;
 {cmt_multi}     analisarComentarioBloco(); 
-{cmt_multi_ini} emitirErro(CMT_ABERTO); return 0;
+{cmt_multi_ini} emitirErro(CMT_ABERTO);
 
 .               emitirErro(TOKEN_DESCONHECIDO); 
 
@@ -140,6 +142,8 @@ void analisarTexto(char *token)
     }
     novaString[--j] = '\0';
 
+    numColunas += yyleng;
+
     verificarPrimeiroToken();    
 
     printf("%s(%s)", token, novaString);
@@ -147,7 +151,7 @@ void analisarTexto(char *token)
 
 void analisarComentarioBloco(){
     numColunas++;
-    for(int i = 1; i < yyleng; i++){
+    for(int i = 1; i < yyleng - 3; i++){
         if(yytext[i] == '\n'){
             numLinhas++;
             numColunas = 1;
@@ -158,13 +162,15 @@ void analisarComentarioBloco(){
             numColunas++;
         }
     }
+
+    numColunas += 3;
 }
 
 void emitirWarning(int erro)
 {
     verificarPrimeiroToken();    
 
-    printf("warning:lexical:%d:%d: ", numLinhas, numColunas);
+    printf("warning:%d:%d: ", numLinhas, numColunas);
 
     switch(erro)
     {
