@@ -5,6 +5,7 @@ Trabalhos e exercicios de implementação feitos durante a matéria de Compilado
 **OBS**: Créditos ao profº Wesley Attrot, autor das listas de exercícios.
 
 * **Exemplos:** Arquivos para estudo
+* **Lexico:** Trabalho do analisador Léxico do compilador de C
 * **Listas:**
     - Lista 05 [Autômatos e início do Léxico]
     - Lista 06 [Início do Léxico]
