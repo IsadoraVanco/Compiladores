@@ -1,0 +1,6 @@
+IF
+L_PAREN
+NUM_INTEGER(1)
+R_PAREN
+L_CURLY_BRACKET
+error:lexical:3:1: unterminated comment
