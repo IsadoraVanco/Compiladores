@@ -2,12 +2,11 @@
 %option noyywrap
 %{
 #include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
 
-int numLinhas = 1;
+bool existeToken = false;
 int numColunas = 1;
-bool cmtAberto = false;
+int numLinhas = 1;
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
@@ -15,12 +14,13 @@ enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
 enum {CMT_DUPLO};
 
 // Protótipos de funções
-void retirarBordas(char *token);
+void analisarTexto(char *token);
 void emitirWarning(int erro);
 void emitirErro(int erro);
 void analisarComentarioBloco();
 void mostrarTokenValor(char *token);
 void mostrarToken(char *token);
+void verificarPrimeiroToken();
 %}
 
 /* Declarações regulares */
@@ -33,16 +33,16 @@ espaco      [ ]
 nova_linha  \n
 
 /* Definições */
-id          [_]?{letra}({letra}|{decimal}|_)*
+id          ({letra}|_)+({letra}|{decimal}|_)*
 num_int     {decimal}+
 num_octal   0[1-7]{octal}*
 num_hexa    0[Xx]{hexa}+
-string      ["](.)*["]
+string      ["](\\.|[^\"])*["]
 caracter    ['](.|\\[abfnrtv\'\"?0\\])[']
 
-cmt_linha       [/][/](.)*"\n"
-cmt_multi       [/][*](.|\n)*[*][/]    
-cmt_multi_ini   [/][*](.)*(\n)*
+cmt_linha       [/][/]({letra}|{decimal}|{espaco})*"\n"
+cmt_multi       [/][*]([^*]|\*+[^*/])*[*][/]    
+cmt_multi_ini   [/][*]([^*]|\*+[^*/])*
 
 %%
 
@@ -112,8 +112,8 @@ exit        mostrarToken("EXIT");
                 }
 }
 
-{string}        retirarBordas("STRING");
-{caracter}      retirarBordas("CHARACTER");
+{string}        analisarTexto("STRING");
+{caracter}      analisarTexto("CHARACTER");
 
 {num_octal}     mostrarTokenValor("NUM_OCTAL");
 {num_int}       mostrarTokenValor("NUM_INTEGER");
@@ -129,7 +129,7 @@ exit        mostrarToken("EXIT");
 
 %%
 
-void retirarBordas(char *token)
+void analisarTexto(char *token)
 {
     char novaString[yyleng];
 
@@ -140,7 +140,9 @@ void retirarBordas(char *token)
     }
     novaString[--j] = '\0';
 
-    printf("%s(%s)\n", token, novaString);
+    verificarPrimeiroToken();    
+
+    printf("%s(%s)", token, novaString);
 }
 
 void analisarComentarioBloco(){
@@ -149,7 +151,7 @@ void analisarComentarioBloco(){
         if(yytext[i] == '\n'){
             numLinhas++;
             numColunas = 1;
-        }else{
+        }else {
             if(yytext[i] == '/' && yytext[i + 1] == '*'){
                 emitirWarning(CMT_DUPLO);
             }
@@ -160,12 +162,14 @@ void analisarComentarioBloco(){
 
 void emitirWarning(int erro)
 {
+    verificarPrimeiroToken();    
+
     printf("warning:lexical:%d:%d: ", numLinhas, numColunas);
 
     switch(erro)
     {
         case CMT_DUPLO:
-            printf("'/*' within block comment\n");
+            printf("'/*' within block comment");
             break;
         default:
             break;
@@ -174,20 +178,22 @@ void emitirWarning(int erro)
 
 void emitirErro(int erro)
 {
+    verificarPrimeiroToken();    
+
     printf("error:lexical:%d:%d: ", numLinhas, numColunas);
 
     switch(erro)
     {
         case TOKEN_DESCONHECIDO:
-            printf("%s\n", yytext);
+            printf("%s", yytext);
             numColunas += yyleng;
             break;
         case ID_GRANDE:
-            printf("identifier too long\n");
+            printf("identifier too long");
             numColunas += yyleng;
             break;
         case CMT_ABERTO:
-            printf("unterminated comment\n");
+            printf("unterminated comment");
             break;
         default:
             break;
@@ -196,16 +202,27 @@ void emitirErro(int erro)
 
 void mostrarTokenValor(char *token)
 {
-    printf("%s(%s)\n", token, yytext);
+    verificarPrimeiroToken();    
 
+    printf("%s(%s)", token, yytext);
     numColunas += yyleng;
 }
 
 void mostrarToken(char *token)
 {
-    printf("%s\n", token);
+    verificarPrimeiroToken();
 
+    printf("%s", token);
     numColunas += yyleng;
+}
+
+void verificarPrimeiroToken()
+{
+    if(existeToken){
+        printf("\n");
+    }
+
+    existeToken = true;
 }
 
 int main() 
