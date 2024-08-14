@@ -279,7 +279,7 @@ then
         DrawError
     fi
 
-    if [ $corretos == 15 ];
+    if [ $corretos == 18 ];
     then
         DrawTrophy
     else

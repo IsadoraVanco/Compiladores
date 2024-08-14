@@ -1,0 +1,14 @@
+IF
+warning:1:7: '/*' within block comment
+IDENTIFIER(id)
+error:lexical:2:3: .
+IDENTIFIER(id)
+IF
+L_PAREN
+IDENTIFIER(id)
+LESS_THAN
+IDENTIFIER(id)
+error:lexical:3:22: .
+IDENTIFIER(id)
+R_PAREN
+ELSE

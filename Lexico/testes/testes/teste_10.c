@@ -57,7 +57,7 @@ if(a>b)
 
    /* comentario
 //
-  //*/
+  / /*/
 
 void blabla()
 {

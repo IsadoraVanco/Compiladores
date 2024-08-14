@@ -1,0 +1,11 @@
+IDENTIFIER(a)
+IDENTIFIER(b)
+IDENTIFIER(c)
+warning:8:28: '/*' within block comment
+IDENTIFIER(d)
+MULTIPLY
+DIV
+IDENTIFIER(e)
+warning:13:35: '/*' within block comment
+IDENTIFIER(f)
+error:lexical:15:1: unterminated comment

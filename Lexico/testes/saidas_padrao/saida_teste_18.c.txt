@@ -1,0 +1,21 @@
+error:lexical:2:1: '
+error:lexical:2:2: \
+error:lexical:2:3: '
+error:lexical:3:1: '
+error:lexical:3:2: \
+error:lexical:3:3: \
+error:lexical:3:4: \
+error:lexical:3:5: '
+error:lexical:4:1: '
+error:lexical:4:2: '
+error:lexical:4:3: '
+error:lexical:5:1: '
+error:lexical:5:2: \
+IDENTIFIER(x)
+error:lexical:5:4: '
+error:lexical:6:1: '
+error:lexical:6:2: '
+STRING(\"\")
+CHARACTER(\a)
+CHARACTER(\n)
+CHARACTER(")
