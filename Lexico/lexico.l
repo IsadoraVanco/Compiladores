@@ -1,7 +1,9 @@
 /* Não utilizar a biblioteca do flex*/
 %option noyywrap
+%x COMMENT
 %{
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define MAX_ID 255
@@ -9,6 +11,13 @@
 bool existeToken = false;
 int numColunas = 1;
 int numLinhas = 1;
+int linhaComentario = 1;
+int colunaComentario = 1;
+
+// Armazena os warnings
+int tamanhoWarning = -1;
+int colunasWarning[10];
+int linhasWarning[10];
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
@@ -16,13 +25,16 @@ enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
 enum {CMT_DUPLO};
 
 // Protótipos de funções
-void analisarTexto(char *token);
-void emitirWarning(int erro);
-void emitirErro(int erro);
-void analisarComentarioBloco();
+void mostrarTexto(char *token);
+void emitirWarning(int erro, int linha, int coluna);
+void emitirErro(int erro, int linha, int coluna);
+void finalizarComentarioBloco();
+void guardarWarningComentario();
+void iniciarComentarioBloco();
 void mostrarTokenValor(char *token);
 void mostrarToken(char *token);
 void verificarPrimeiroToken();
+void reiniciarColunas();
 %}
 
 /* Declarações regulares */
@@ -33,6 +45,8 @@ hexa        [0-9A-Fa-f]
 octal       [0-7]
 espaco      [ ]
 nova_linha  \n
+ini_cmt     [/][*]
+fim_cmt     [*][/]
 
 /* Definições */
 id          ({letra}|_)+({letra}|{decimal}|_)*
@@ -40,11 +54,9 @@ num_int     {decimal}+
 num_octal   0[1-7]{octal}*
 num_hexa    0[Xx]{hexa}+
 string      ["](\\.|[^\"])*["]
-caracter    ['](.|\\[abfnrtv\'\"?0\\])[']
+caracter    [']([^\n\'\\]|\\[abfrtnv\'\"?0\\])[']
 
-cmt_linha       [/][/](.)*"\n"
-cmt_multi       [/][*]([^*]|\*+[^*/])*[*][/]    
-cmt_multi_ini   [/][*]([^*]|\*+[^*/])*
+cmt_linha       [/][/](.)*("\n")?
 
 %%
 
@@ -106,32 +118,37 @@ exit        mostrarToken("EXIT");
 "#"         mostrarToken("NUMBER_SIGN");
 "->"        mostrarToken("POINTER");
 
-{id}        {
-                if(yyleng > MAX_ID) {
-                    emitirErro(ID_GRANDE);
-                }else{
-                    mostrarTokenValor("IDENTIFIER");
-                }
-}
-
-{string}        analisarTexto("STRING");
-{caracter}      analisarTexto("CHARACTER");
+{string}        mostrarTexto("STRING");
+{caracter}      mostrarTexto("CHARACTER");
 
 {num_octal}     mostrarTokenValor("NUM_OCTAL");
 {num_int}       mostrarTokenValor("NUM_INTEGER");
 {num_hexa}      mostrarTokenValor("NUM_HEXA");
 
-{espaco}        numColunas++;
-{cmt_linha}     numColunas = 1; numLinhas++;
-{nova_linha}    numColunas = 1; numLinhas++;
-{cmt_multi}     analisarComentarioBloco(); 
-{cmt_multi_ini} emitirErro(CMT_ABERTO);
+{id}        {
+                if(yyleng > MAX_ID) {
+                    emitirErro(ID_GRANDE, numLinhas, numColunas);
+                }else{
+                    mostrarTokenValor("IDENTIFIER");
+                }
+}
 
-.               emitirErro(TOKEN_DESCONHECIDO); 
+{espaco}        numColunas++;
+{cmt_linha}     reiniciarColunas();
+{nova_linha}    reiniciarColunas();
+
+{ini_cmt}                iniciarComentarioBloco();
+<COMMENT>.{fim_cmt}      finalizarComentarioBloco();
+<COMMENT>{ini_cmt}       guardarWarningComentario();
+<COMMENT>{nova_linha}    reiniciarColunas();
+<COMMENT><<EOF>>         emitirErro(CMT_ABERTO, linhaComentario, colunaComentario); return 0;
+<COMMENT>.               numColunas += yyleng;
+
+.               emitirErro(TOKEN_DESCONHECIDO, numLinhas, numColunas); 
 
 %%
 
-void analisarTexto(char *token)
+void mostrarTexto(char *token)
 {
     char novaString[yyleng];
 
@@ -149,44 +166,54 @@ void analisarTexto(char *token)
     printf("%s(%s)", token, novaString);
 }
 
-void analisarComentarioBloco(){
-    numColunas++;
-    for(int i = 1; i < yyleng - 3; i++){
-        if(yytext[i] == '\n'){
-            numLinhas++;
-            numColunas = 1;
-        }else {
-            if(yytext[i] == '/' && yytext[i + 1] == '*'){
-                emitirWarning(CMT_DUPLO);
-            }
-            numColunas++;
+void finalizarComentarioBloco()
+{
+    numColunas += yyleng; 
+    BEGIN(INITIAL);
+
+    if(tamanhoWarning >= 0){
+        for(int i = 0; i <= tamanhoWarning; i++){
+            emitirWarning(CMT_DUPLO, linhasWarning[i], colunasWarning[i]);
         }
-    }
-
-    numColunas += 3;
-}
-
-void emitirWarning(int erro)
-{
-    verificarPrimeiroToken();    
-
-    printf("warning:%d:%d: ", numLinhas, numColunas);
-
-    switch(erro)
-    {
-        case CMT_DUPLO:
-            printf("'/*' within block comment");
-            break;
-        default:
-            break;
+        tamanhoWarning = -1;
     }
 }
 
-void emitirErro(int erro)
+void guardarWarningComentario()
+{
+    // Adiciona a linha e coluna no vetor 
+    tamanhoWarning++;
+    linhasWarning[tamanhoWarning] = numLinhas;
+    colunasWarning[tamanhoWarning] = numColunas;
+
+    numColunas += yyleng;
+}
+
+void iniciarComentarioBloco()
+{
+    // Vai para o estado de comentário
+    BEGIN(COMMENT);
+
+    linhaComentario = numLinhas;
+    colunaComentario = numColunas;
+    numColunas += yyleng;
+    tamanhoWarning = -1;
+}
+
+void emitirWarning(int erro, int linha, int coluna)
 {
     verificarPrimeiroToken();    
 
-    printf("error:lexical:%d:%d: ", numLinhas, numColunas);
+    if(erro == CMT_DUPLO){
+        printf("warning:%d:%d: '/*' within block comment", linha, coluna);
+    }
+}
+
+void emitirErro(int erro, int linha, int coluna)
+{
+    verificarPrimeiroToken();    
+
+    printf("error:lexical:%d:%d: ", linha, coluna);
 
     switch(erro)
     {
@@ -229,6 +256,12 @@ void verificarPrimeiroToken()
     }
 
     existeToken = true;
+}
+
+void reiniciarColunas()
+{
+    numColunas = 1; 
+    numLinhas++;
 }
 
 int main() 
