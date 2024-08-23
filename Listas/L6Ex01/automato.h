@@ -7,13 +7,14 @@
  * DEFINIÇÕES
  *****************************************************************/
 
+#define MAXCHAR 256
+
 typedef struct
 {
-    short int qtdEstados;        // Guarda o número de estados (não considera o inválido)
+    short int qtdEstados;        // Guarda o número de estados (válidos)
     short int estadoInicial;     // Guarda o estado inicial
     short int *estadosFinais;    // Guarda os estados finais
     char **tokens;               // Guarda o token de cada estado
-    short int qtdSimbolos;       // Guarda a quantidade máxima de símbolos aceitos (considera desde o símbolo 0)
     short int **matrizTransicao; // Guarda a matriz de transição de estados
 } Automato;
 
@@ -25,10 +26,9 @@ typedef struct
  * @brief Cria uma estrutura de autômato
  * @param numEstados O número de estados totais do autômato
  * @param estadoInicial O estado inicial do autômato
- * @param numSimbolos Número de símbolos aceitos pelo autômato
  * @return O endereço do novo autômato
  */
-Automato *criarAutomato(short int numEstados, short int estadoInicial, short int numSimbolos);
+Automato *criarAutomato(short int numEstados, short int estadoInicial);
 
 /**
  * @brief Configura um estado como final
@@ -39,19 +39,7 @@ Automato *criarAutomato(short int numEstados, short int estadoInicial, short int
  */
 void configurarEstadoFinal(Automato *automato, short int numEstado, char *nomeToken, bool mostrarApenasToken);
 
-/**
- * @brief Configura um símbolo para ser desconsiderado em todas as transições
- * @param automato O endereço do autômato
- * @param simbolo O símbolo a ser desconsiderado
- */
-void configurarSimboloDesconsiderado(Automato *automato, short int simbolo);
-
-/**
- * @brief Configura um símbolo para ser neutro em todas as transições
- * @param automato O endereço do autômato
- * @param simbolo O símbolo neutro
- */
-void configurarSimboloNeutro(Automato *automato, short int simbolo);
+void configurarCaractereIgnorado(Automato *automato, short int caractere);
 
 /**
  * @brief Adiciona uma transição entre dois estados
@@ -69,11 +57,10 @@ void adicionarTransicao(Automato *automato, short int estadoOrigem, short int es
 
 /**
  * @brief Verifica se um estado de um autômato é válido
- * @param automato O endereço do autômato
  * @param numEstado O número do estado
  * @return Valor lógico da verificação
  */
-bool ehEstadoValido(Automato *automato, short int numEstado);
+bool ehEstadoValido(short int numEstado);
 
 /**
  * @brief Verifica se um estado de um autômato é final
@@ -103,6 +90,8 @@ void deletarAutomato(Automato *automato);
  */
 void mostrarToken(Automato *automato, int numEstado, char *string,
                   int inicioSubString, int fimSubString);
+
+void emitirErro();
 
 /**
  * @brief Analisa a entrada de dados no autômato e classifica os tokens

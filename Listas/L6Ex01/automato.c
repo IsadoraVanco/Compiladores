@@ -1,35 +1,33 @@
+#include "automato.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "automato.h"
 
 /*****************************************************************
  * DEFINIÇÕES
  *****************************************************************/
 
-// Não emite erros na verificação, pode fazer parte de um token
-#define ESTADO_NEUTRO -2
-// Não emite erros na verificação, não faz parte de um token
+// Indica um estado para um caractere desconhecido
+#define ESTADO_DESCONHECIDO -2
+// Indica que um caractere não faz parte do token, mas não emite erro
 #define ESTADO_DESCONSIDERADO -1
-// Emite erros durante a verificação
+// Indica a transição invalida para outro estado (caractere conhecido)
 #define ESTADO_INVALIDO 0
+
 #define ESTADO_FINAL 1
+
+bool inicioTexto = true;
 
 /*****************************************************************
  * FUNÇÕES DE CONFIGURAÇÃO
  *****************************************************************/
 
-Automato *criarAutomato(short int numEstados, short int estadoInicial, short int numSimbolos)
+Automato *criarAutomato(short int numEstados, short int estadoInicial)
 {
     if (numEstados <= 0)
     {
         printf("[Automato][ERRO] Número de estados insuficiente: %d\n", numEstados);
-        return NULL;
-    }
-
-    if (numSimbolos <= 0)
-    {
-        printf("[Automato][ERRO] Número de símbolos insuficiente: %d\n", numSimbolos);
         return NULL;
     }
 
@@ -66,12 +64,10 @@ Automato *criarAutomato(short int numEstados, short int estadoInicial, short int
         return NULL;
     }
 
-    // Contando com o (0)
-    novo->qtdSimbolos = numSimbolos + 1;
-
     novo->matrizTransicao = (short int **)malloc(totalEstados * sizeof(short int *));
     if (novo->matrizTransicao == NULL)
     {
+        // free(novo->simbolosValidos);
         free(novo->tokens);
         free(novo->estadosFinais);
         free(novo);
@@ -82,19 +78,20 @@ Automato *criarAutomato(short int numEstados, short int estadoInicial, short int
 
     for (int i = 0; i < totalEstados; i++)
     {
-        novo->matrizTransicao[i] = (short int *)malloc((numSimbolos + 1) * sizeof(short int));
-        for (int j = 0; j < numSimbolos; j++)
+        novo->matrizTransicao[i] = (short int *)malloc((MAXCHAR + 1) * sizeof(short int));
+        for (int j = 0; j < MAXCHAR; j++)
         {
-            novo->matrizTransicao[i][j] = ESTADO_INVALIDO;
+            novo->matrizTransicao[i][j] = ESTADO_DESCONHECIDO;
         }
     }
 
+    // printf("OK\n");
     return novo;
 }
 
 void configurarEstadoFinal(Automato *automato, short int numEstado, char *nomeToken, bool mostrarApenasToken)
 {
-    if (!ehEstadoValido(automato, numEstado))
+    if (!ehEstadoValido(numEstado))
     {
         printf("[Automato][ERRO] Não é possível configurar o estado %d: estado inválido\n", numEstado);
         return;
@@ -112,58 +109,51 @@ void configurarEstadoFinal(Automato *automato, short int numEstado, char *nomeTo
     automato->tokens[numEstado] = strdup(nomeToken);
 }
 
-void configurarSimboloDesconsiderado(Automato *automato, short int simbolo)
+void configurarCaractereIgnorado(Automato *automato, short int caractere)
 {
-    if (simbolo > automato->qtdSimbolos)
+    // Percorre as linhas dos caracteres
+    for (int i = 0; i <= automato->qtdEstados; i++)
     {
-        printf("[Automato][ERRO] Não é possível configurar o símbolo '%d' como desconsiderado\n", simbolo);
-        return;
-    }
-
-    for (int estado = automato->qtdEstados; estado > 0; estado--)
-    {
-        automato->matrizTransicao[estado][simbolo] = ESTADO_DESCONSIDERADO;
-    }
-}
-
-void configurarSimboloNeutro(Automato *automato, short int simbolo)
-{
-    if (simbolo > automato->qtdSimbolos)
-    {
-        printf("[Automato][ERRO] Não é possível configurar o símbolo '%d' como neutro\n", simbolo);
-        return;
-    }
-
-    for (int estado = automato->qtdEstados; estado > 0; estado--)
-    {
-        automato->matrizTransicao[estado][simbolo] = ESTADO_NEUTRO;
+        automato->matrizTransicao[i][caractere] = ESTADO_DESCONSIDERADO;
     }
 }
 
 void adicionarTransicao(Automato *automato, short int estadoOrigem, short int estadoDestino,
                         short int caractereInicio, short int caractereFim)
 {
-    if (!ehEstadoValido(automato, estadoOrigem))
+    if (!ehEstadoValido(estadoOrigem))
     {
         printf("[Automato][ERRO] Não é possível adicionar transição do estado de origem %d: estado inválido\n", estadoOrigem);
         return;
     }
 
-    if (!ehEstadoValido(automato, estadoDestino))
+    if (!ehEstadoValido(estadoDestino))
     {
         printf("[Automato][ERRO] Não é possível adicionar transição para estado destino %d: estado inválido\n", estadoOrigem);
         return;
     }
 
-    if (caractereFim < caractereInicio || caractereFim > automato->qtdSimbolos ||
-        caractereInicio > automato->qtdSimbolos)
+    if (caractereFim > MAXCHAR || caractereInicio > MAXCHAR)
     {
-        printf("[Automato][ERRO] Não é possível adicionar transição para os caracteres %c ou %c\n", (char)caractereInicio, (char)caractereFim);
+        printf("[Automato][ERRO] Não é possível adicionar transição para os caracteres %c ou %c\n", caractereInicio, caractereFim);
         return;
     }
 
+    // printf("estado\n");
+    // Percorre as colunas dos caracteres
     for (short int i = caractereInicio; i <= caractereFim; i++)
     {
+        // Percorre por cada estado
+        for (int estado = 0; estado <= automato->qtdEstados; estado++)
+        {
+            // Muda para um estado invalido
+            if (automato->matrizTransicao[estado][i] == ESTADO_DESCONHECIDO)
+            {
+                automato->matrizTransicao[estado][i] = ESTADO_INVALIDO;
+            }
+            // printf("matriz %d\n", automato->matrizTransicao[estado][i]);
+        }
+        // printf("%d\n", automato->matrizTransicao[estadoOrigem][i]);
         automato->matrizTransicao[estadoOrigem][i] = (short int)estadoDestino;
     }
 }
@@ -172,9 +162,9 @@ void adicionarTransicao(Automato *automato, short int estadoOrigem, short int es
  * FUNÇÕES BÁSICAS
  *****************************************************************/
 
-bool ehEstadoValido(Automato *automato, short int numEstado)
+bool ehEstadoValido(short int numEstado)
 {
-    return numEstado >= 0 && numEstado <= automato->qtdEstados && numEstado != ESTADO_INVALIDO;
+    return numEstado >= 0 && numEstado <= MAXCHAR && numEstado != ESTADO_INVALIDO;
 }
 
 bool ehEstadoFinal(Automato *automato, short int numEstado)
@@ -186,6 +176,7 @@ bool ehEstadoFinal(Automato *automato, short int numEstado)
 void deletarAutomato(Automato *automato)
 {
     free(automato->estadosFinais);
+    // free(automato->simbolosValidos);
 
     for (int i = 0; i <= automato->qtdEstados; i++)
     {
@@ -202,10 +193,19 @@ void deletarAutomato(Automato *automato)
  * FUNÇÕES DE MANIPULAÇÃO
  *****************************************************************/
 
+void verificarInicioTexto()
+{
+    if(!inicioTexto){
+        printf("\n");
+    }
+
+    inicioTexto = false;
+}
+
 void mostrarToken(Automato *automato, int numEstado, char *string,
                   int inicioSubString, int fimSubString)
 {
-    if (!ehEstadoValido(automato, numEstado))
+    if (!ehEstadoValido(numEstado))
     {
         printf("[Automato][ERRO] Erro ao mostrar token: estado %d não é valido\n", numEstado);
         return;
@@ -216,6 +216,8 @@ void mostrarToken(Automato *automato, int numEstado, char *string,
         printf("[Automato][ERRO] Erro ao mostrar token: estado %d não é final\n", numEstado);
         return;
     }
+
+    verificarInicioTexto();
 
     printf("%s", automato->tokens[numEstado]);
 
@@ -238,8 +240,13 @@ void mostrarToken(Automato *automato, int numEstado, char *string,
 
         printf(" %s", subString);
     }
+}
 
-    printf("\n");
+void emitirErro()
+{
+    verificarInicioTexto();
+
+    printf("ERRO");
 }
 
 void identificarTokens(Automato *automato, char *entrada, int tamanho)
@@ -261,7 +268,7 @@ void identificarTokens(Automato *automato, char *entrada, int tamanho)
             // Se há um token reconhecido
             if (indiceFimToken >= indiceInicioToken &&
                 ultimoEstadoFinal != ESTADO_INVALIDO &&
-                ultimoEstadoFinal != ESTADO_DESCONSIDERADO)
+                ultimoEstadoFinal != ESTADO_DESCONHECIDO)
             {
                 mostrarToken(automato, ultimoEstadoFinal, entrada,
                              indiceInicioToken, indiceFimToken);
@@ -280,6 +287,7 @@ void identificarTokens(Automato *automato, char *entrada, int tamanho)
             {
                 indiceInicioToken++;
                 indiceAtual = indiceInicioToken;
+                // printf("ERRO2\n");
             }
         }
         else
@@ -293,12 +301,7 @@ void identificarTokens(Automato *automato, char *entrada, int tamanho)
             // printf("inicio [%d] fim [%d]\n", indiceInicioToken, indiceFimToken);
 
             // Verifica o próximo estado
-            if (proximoEstado == ESTADO_NEUTRO)
-            {
-                indiceFimToken = indiceAtual;
-                indiceAtual++;
-            }
-            else if (proximoEstado == ESTADO_INVALIDO || proximoEstado == ESTADO_DESCONSIDERADO)
+            if (proximoEstado == ESTADO_INVALIDO || proximoEstado == ESTADO_DESCONSIDERADO || proximoEstado == ESTADO_DESCONHECIDO)
             {
                 // Verifica se o último token foi definido
                 if (indiceFimToken >= indiceInicioToken)
@@ -314,12 +317,12 @@ void identificarTokens(Automato *automato, char *entrada, int tamanho)
                 else
                 {
                     // Volta o indice atual para o proximo indice do começo para avaliar
-                    indiceAtual = indiceInicioToken + 1;
                     indiceInicioToken++;
+                    indiceAtual = indiceInicioToken;
 
-                    if (proximoEstado == ESTADO_INVALIDO)
+                    if (proximoEstado == ESTADO_INVALIDO || proximoEstado == ESTADO_DESCONHECIDO)
                     {
-                        printf("ERRO\n");
+                        emitirErro();
                     }
                 }
 
