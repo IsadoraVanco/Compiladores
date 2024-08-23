@@ -1,36 +1,42 @@
 /* Não utilizar a biblioteca do flex*/
 %option noyywrap
 %{
+#include <stdbool.h>
 
+bool primeiroToken = true;
+
+void verificarPrimeiroToken();
 %}
 
-%%
-
-[a-z]+[a-z0-9]* { 
-    printf("%s\n", yytext);  
-}
-
-[0-9]+ { 
-    printf("%s\n", yytext);  
-}
-
-[0-9]+e[+|-]?[0-9]+ { 
-    printf("%s\n", yytext);  
-}
-
-[+|-] { 
-    printf("%s\n", yytext);  
-}
-
-\n {}
-
-<<EOF>> { return 0; }
-
-. { 
-    printf("ERRO\n");  
-}
+decimal [0-9]
+letra   [a-z]
+sinal   [+-]
 
 %%
+
+{letra}+[{letra}{decimal}]*     verificarPrimeiroToken(); printf("%s", yytext);  
+
+{decimal}+                      verificarPrimeiroToken(); printf("%s", yytext);  
+
+{decimal}+e{sinal}?{decimal}+   verificarPrimeiroToken(); printf("%s", yytext);  
+
+{sinal}                         verificarPrimeiroToken(); printf("%s", yytext);  
+
+\n                              ;
+
+.                               verificarPrimeiroToken(); printf("ERRO");  
+
+%%
+
+void verificarPrimeiroToken()
+{
+    if(!primeiroToken)
+    {
+        printf("\n");
+    }
+
+    primeiroToken = false;
+}
 
 int main() {
     yylex();

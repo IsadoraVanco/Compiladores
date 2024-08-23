@@ -1,42 +1,39 @@
-# Nome do projeto
+# Nome do arquivo gerado
 PROJETO = l7e1
 
-# Pasta de saída para arquivos objeto e outros gerados
-OUT = out
+# ******** ARQUIVOS **********************************
 
-# Cria a pasta de saída se ela não existir
-$(shell mkdir -p $(OUT))
+# Arquivos c/c++
+CXX_SRCS = 
+CXX_HEADERS = 
 
-# Arquivos .l
-LEXER = automato.l
+# Arquivos flex
+LEX_SRCS = automato.l
+LEX_GNRT = lex.yy.c
 
-# Flex e GCC
-FLEX = flex
-CC = gcc
-CFLAGS = -Wall -Wextra -pedantic-errors -fstack-protector-all -Werror=implicit-function-declaration -g
+# ******** COMPILADORES E FLAGS **********************************
 
-# Regra padrão
+# Compiladores
+CXX = gcc
+LEX = flex
+
+# Flags dos compiladores
+CXX_FLAGS =
+LEX_FLAGS = -lfl
+
+# ******** REGRAS DE COMPILAÇÃO **********************************
+
+# Regra padrão para o comando "make"
 all: $(PROJETO)
 
-# Regra para compilar o projeto
-$(PROJETO): $(OUT)/lex.yy.o
-	$(CC) $(CFLAGS) $(OUT)/lex.yy.o -o $(PROJETO)
+# Compilar o flex gerado
+$(PROJETO): $(LEX_GNRT) $(CXX_SRCS) $(CXX_HEADERS)
+	$(CXX) $^ $(CXX_FLAGS) $(LEX_FLAGS) -o $@
 
-# Regra para gerar lex.yy.c e compilar em lex.yy.o
-$(OUT)/lex.yy.o: $(LEXER)
-	$(FLEX) $<
-	mv lex.yy.c $(OUT)/
-	$(CC) $(CFLAGS) -c $(OUT)/lex.yy.c -o $@
+# Compilar o flex gerado
+$(LEX_GNRT): $(LEX_SRCS)
+	$(LEX) -o $@ $<
 
-# Regra para limpar os arquivos objeto e o executável
+# Limpa os arquivos gerados
 clean:
-	rm -rf $(PROJETO)
-	rm -rf $(OUT)
-
-# Regra para executar o programa
-run: all
-	./$(PROJETO)
-
-# Regra para executar o programa com o Valgrind
-valgrind: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(PROJETO)
+	rm -f $(PROJETO) $(LEX_GNRT) *.o
