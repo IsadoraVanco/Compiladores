@@ -1,5 +1,7 @@
 # Exercicio 01 - Lista 07
 
+Créditos ao profº Wesley Attrot, autor do exercicio.
+
 Utilizando a ferramenta Flex, escreva um arquivo .l para gerar um analisador léxico que implementa o seguinte autômato (mesmo da lista 5 exercicio 01): 
 
 ![automato](../Imagens/automato-L5Ex01.png)
