@@ -16,8 +16,8 @@ int colunaComentario = 1;
 
 // Armazena os warnings
 int tamanhoWarning = -1;
-int colunasWarning[10];
-int linhasWarning[10];
+int colunasWarning[50];
+int linhasWarning[50];
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
@@ -88,7 +88,7 @@ exit        mostrarToken("EXIT");
 "++"        mostrarToken("INC");
 "--"        mostrarToken("DEC");
 "&"         mostrarToken("BITWISE_AND");
-"|"         mostrarToken("BITWISE_ORn");
+"|"         mostrarToken("BITWISE_OR");
 "~"         mostrarToken("BITWISE_NOT");
 "^"         mostrarToken("BITWISE_XOR");
 "!"         mostrarToken("NOT");
@@ -137,14 +137,15 @@ exit        mostrarToken("EXIT");
 {cmt_linha}     reiniciarColunas();
 {nova_linha}    reiniciarColunas();
 
-{ini_cmt}                iniciarComentarioBloco();
-<COMMENT>.{fim_cmt}      finalizarComentarioBloco();
-<COMMENT>{ini_cmt}       guardarWarningComentario();
-<COMMENT>{nova_linha}    reiniciarColunas();
-<COMMENT><<EOF>>         emitirErro(CMT_ABERTO, linhaComentario, colunaComentario); return 0;
-<COMMENT>.               numColunas += yyleng;
+{ini_cmt}                   iniciarComentarioBloco();
+<COMMENT>{nova_linha}       reiniciarColunas(); 
+<COMMENT>{fim_cmt}          finalizarComentarioBloco();
+<COMMENT>{ini_cmt}[\n]      guardarWarningComentario(); reiniciarColunas();
+<COMMENT>{ini_cmt}[^/]      guardarWarningComentario();
+<COMMENT><<EOF>>            emitirErro(CMT_ABERTO, linhaComentario, colunaComentario); return 0;
+<COMMENT>.                  numColunas += yyleng; 
 
-.               emitirErro(TOKEN_DESCONHECIDO, numLinhas, numColunas); 
+.                           emitirErro(TOKEN_DESCONHECIDO, numLinhas, numColunas); 
 
 %%
 
@@ -168,6 +169,7 @@ void mostrarTexto(char *token)
 
 void finalizarComentarioBloco()
 {
+    // printf("%d %d \n", numLinhas, numColunas);
     numColunas += yyleng; 
     BEGIN(INITIAL);
 
@@ -181,6 +183,7 @@ void finalizarComentarioBloco()
 
 void guardarWarningComentario()
 {
+    // printf("%d %d \n", numLinhas, numColunas);
     // Adiciona a linha e coluna no vetor 
     tamanhoWarning++;
     linhasWarning[tamanhoWarning] = numLinhas;
@@ -191,6 +194,7 @@ void guardarWarningComentario()
 
 void iniciarComentarioBloco()
 {
+    // printf("%d %d \n", numLinhas, numColunas);
     // Vai para o estado de comentário
     BEGIN(COMMENT);
 
