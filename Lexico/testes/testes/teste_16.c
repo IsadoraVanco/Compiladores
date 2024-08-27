@@ -1,14 +1,14 @@
-/*  comentário fechado * ele nao aceita acentos!! */
+/*  comentario fechado * ele nao aceita acentos!! */
 a
-/*  comentário fechado  */
+/*  comentario fechado  */
 b
-/*  comentário fechado **/
-/*  comentário fechado /*/
+/*  comentario fechado **/
+/*  comentario fechado /*/
 c
 /*  comentario com warning /*
  e aqui fechado / */
 d
-/* comentário fechado e erro // */ */
+/* comentario fechado e erro // */ */
 e
 /*  comentario fechado com warning/* */
 f
