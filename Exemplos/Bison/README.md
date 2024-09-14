@@ -1,6 +1,8 @@
 # Exemplos em Bison
 
 * **Calculadora** => Exemplo de uma calculadora simples em Bison, que reconhece números de um dígito
+* **Plus** => Calculadora simples, mas um pouco mais elaborada que o Calculadora
+* **PlusFlex** => A mesma aplicação de Plus, mas utilizando o Flex e Bison
 
 ## Estrutura básica
 
@@ -12,6 +14,7 @@
 }%
 
 // Aqui vão declarações de variáveis e definições regulares
+// As precedências também são definidas aqui
 
 %%
 
@@ -27,6 +30,8 @@
 
 * Caso não haja nenhuma ação definida para uma produção com um único símbolo, implicitamente, a ação {$$ = $1} será realizada.
 
+* O Bison aceita gramáticas ambíguas, mas provavelmente haverá conflitos. Para isso, o Bison oferece um mecanismo para tratar os conflitos: símbolos de associatividade e precedência.
+
 * É necessário definir ao menos três funções: 
 ```
 int yylex(void);
@@ -41,6 +46,10 @@ Para gerar o arquivo **arquivo.tab.c**:
 ```
 bison arquivo.y
 ```
+
+Pode-se usar a opção **-v** para gerar um arquivo **arquivo.output** contendo a descrição de conflitos e uma tabela de como eles foram resolvidos. 
+
+Para que os tokens criados no Bison sejam reconhecidos no Flex, utiliza-se **-d** na compilação do Bison, que gerará um arquivo **arquivo.tab.h**.
 
 Depois, basta compilar normalmente:
 
