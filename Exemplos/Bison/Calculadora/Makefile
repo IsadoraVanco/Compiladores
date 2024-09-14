@@ -14,6 +14,7 @@ LEX_GNRT =
 # Arquivos Bison
 BIS_SRCS = calculadora.y
 BIS_GNRT = calculadora.tab.c
+BIS_OUT = calculadora.output
 
 # ******** COMPILADORES E FLAGS **********************************
 
@@ -25,6 +26,7 @@ BIS = bison
 # Flags dos compiladores
 CXX_FLAGS = -std=c++17 -O2
 LEX_FLAGS = -lfl
+BIS_FLAGS = -v
 
 # ******** REGRAS DE COMPILAÇÃO **********************************
 
@@ -41,7 +43,7 @@ $(LEX_GNRT): $(LEX_SRCS)
 
 # Compilar o bison gerado
 $(BIS_GNRT): $(BIS_SRCS)
-	$(BIS) $(BIS_SRCS)
+	$(BIS) $(BIS_SRCS) $(BIS_FLAGS)
 
 # Compilar os arquivos fontes
 %.o: %.cpp $(CXX_HEADERS)
@@ -49,4 +51,4 @@ $(BIS_GNRT): $(BIS_SRCS)
 
 # Limpa os arquivos gerados
 clean:
-	rm -f $(PROJETO) $(LEX_GNRT) $(BIS_GNRT) *.o
+	rm -f $(PROJETO) $(LEX_GNRT) $(BIS_GNRT) $(BIS_OUT) *.o
