@@ -25,6 +25,22 @@
 // Terceiro bloco: FUNÇÕES AUXILIARES
 ```
 
+## Como compilar ?
+
+Para gerar o arquivo **lex.yy.c**:
+
+```
+flex arquivo.l 
+```
+
+Depois, basta compilar normalmente:
+
+```
+gcc lex.yy.c -o arquivo
+```
+
+**OBS**: O pacote "flex" deve ser instalado no Linux
+
 ## Fontes
 
-* [Judson Santiago](https://www.youtube.com/watch?v=7_TX7OtLWe8)
+* [Judson Santiago](https://www.youtube.com/@JudSan)
