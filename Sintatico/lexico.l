@@ -3,12 +3,16 @@
 %{
 #include <iostream>
 #include <queue>
+#include <string>
 #include "sintatico.tab.h"
 
 #define MAX_ID 255
 
 using std::cout;
 using std::queue;
+using std::string;
+
+extern YYSTYPE yylval;
 
 bool existeToken = false;
 
@@ -18,8 +22,8 @@ int linhaComentario = 1;
 int colunaComentario = 1;
 
 // Armazena os warnings
-queue<int> linhaWarning;
-queue<int> colunaWarning;
+queue<int> linhasWarning;
+queue<int> colunasWarning;
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
@@ -27,7 +31,7 @@ enum {TOKEN_DESCONHECIDO, ID_GRANDE, CMT_ABERTO};
 enum {CMT_DUPLO};
 
 // Protótipos de funções
-void mostrarTexto(char *token);
+void guardarSimbolo(string token);
 void emitirWarning(int erro, int linha, int coluna);
 void emitirErroLexico(int erro, int linha, int coluna);
 void finalizarComentarioBloco();
@@ -118,18 +122,18 @@ exit        numColunas += yyleng; return EXIT;
 "#"         numColunas += yyleng; return NUMBER_SIGN;
 "->"        numColunas += yyleng; return POINTER;
 
-{string}        mostrarTexto("STRING");
-{caracter}      mostrarTexto("CHARACTER");
+{string}        guardarSimbolo("STRING");
+{caracter}      guardarSimbolo("CHARACTER");
 
-{num_octal}     mostrarTokenValor("NUM_OCTAL");
-{num_int}       mostrarTokenValor("NUM_INTEGER");
-{num_hexa}      mostrarTokenValor("NUM_HEXA");
+{num_octal}     guardarSimbolo("NUM_OCTAL");
+{num_int}       guardarSimbolo("NUM_INTEGER");
+{num_hexa}      guardarSimbolo("NUM_HEXA");
 
 {id}        {
                 if(yyleng > MAX_ID) {
                     emitirErroLexico(ID_GRANDE, numLinhas, numColunas);
                 }else{
-                    mostrarTokenValor("IDENTIFIER");
+                    guardarSimbolo("IDENTIFIER");
                 }
 }
 
@@ -149,22 +153,9 @@ exit        numColunas += yyleng; return EXIT;
 
 %%
 
-void mostrarTexto(char *token)
+void guardarSimbolo(string token)
 {
-    char novaString[yyleng];
 
-    // Copia sem os caracteres das bordas
-    int j = 0;
-    for (int i = 1; yytext[i] != '\0'; ++i) {
-        novaString[j++] = yytext[i];
-    }
-    novaString[--j] = '\0';
-
-    numColunas += yyleng;
-
-    verificarPrimeiroToken();    
-
-    cout << token << "(" << novaString << ")";
 }
 
 void finalizarComentarioBloco()

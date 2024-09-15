@@ -1,17 +1,34 @@
 %{
+#include <iostream>
+
+using std::cout;
+
 int yylex(void);
 int yyparser(void);
 void yyerror(const char *);
 
 extern void verificarPrimeiroToken();
 
+void emitirErroSintatico(int erro);
+
 // Tipos de erros
-enum {};
+enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
 %}
+
+%union {
+    struct {
+        char *valor;
+        int column;
+        int line;
+        int type;
+    } token;
+}
 
 %token IDENTIFIER
 
 %token STRING CHARACTER
+
+%token NUM_HEXA NUM_INTEGER NUM_OCTAL
 
 %token VOID INT CHAR RETURN BREAK
 %token SWITCH CASE DEFAULT DO WHILE
@@ -29,8 +46,12 @@ enum {};
 
 %%
 
-programa    : declaracoes nPrograma
-            | funcao nPrograma
+inicial     : programa EoF              { cout << "SUCCESSFUL COMPILATION."; }
+            | programa ERRO             { emitirErroSintatico(); }
+            ;
+
+programa    : declaracoes nPrograma     
+            | funcao nPrograma     
             ;
 
 nPrograma   : programa
@@ -235,15 +256,34 @@ eMulti      : eCast
 
 %%
 
-void yyerror(const char *string)
+void emitirErroSintatico(int erro)
 {
-    extern int yylineno;
-    extern char *yytext;
+    extern int numColunas;
+    extern int numLinhas;
 
-    cout << "[ERRO] " << string << "\n";
-    cout << "Simbolo: " << yytext << "\n";
-    cout << "Linha: " << yylineno << "\n";
+    verificarPrimeiroToken();
+
+    cout << "error:syntax:" << numLinhas << ":" << numColunas;
+
+    switch(erro)
+    {
+        case TOKEN_INESPERADO:
+
+        break;
+        
+        case TOKEN_FALTANTE:
+        break;
+
+        default:
+        break;
+    };
+
     exit(EXIT_FAILURE);
+}
+
+void yyerror(const char *)
+{
+    emitirErroSintatico(TOKEN_FALTANTE);
 }
 
 int main()
