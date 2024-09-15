@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(PlusPlusFlex)
+
+# Configuração do C++
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 17)
+
+# Configuração do Flex
+find_package(FLEX)
+FLEX_TARGET(Lexer plusplusflex.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp)
+
+# Configuração do Bison
+find_package(BISON)
+FLEX_TARGET(Parser plusplusflex.l ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp
+            DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/parser.h)
+
+# Configuração do executável
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+add_executable(plusplusflex ${FLEX_Lexer_OUTPUTS} ${BISON_Parser_OUTPUTS})

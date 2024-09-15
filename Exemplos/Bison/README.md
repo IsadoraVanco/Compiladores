@@ -1,8 +1,9 @@
 # Exemplos em Bison
 
-* **Calculadora** => Exemplo de uma calculadora simples em Bison, que reconhece números de um dígito
-* **Plus** => Calculadora simples, mas um pouco mais elaborada que o Calculadora
+* **Calculadora** => Exemplo de uma calculadora simples em Bison, que reconhece números de um dígito e faz operações (+ *)
+* **Plus** => Evolução da Calculadora, faz operações (+ - * /) e reconhece números negativos de ponto flutuante
 * **PlusFlex** => A mesma aplicação de Plus, mas utilizando o Flex e Bison
+* **PlusPlusFlex** => Evolução de PlusFlex, armazena variáveis criadas e faz as operações com elas
 
 ## Estrutura básica
 
