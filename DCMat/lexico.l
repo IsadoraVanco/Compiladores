@@ -1,27 +1,35 @@
 %option noyywrap
 %{
+#include "sintatico.tab.h"
+
 #include <iostream>
 
-extern YYSTYPE yylval;
+using std::cout;
+
+// Para controlar se será a leitura da entrada inteira
+bool leituraEntrada = true;
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO, ID_GRANDE};
 
+// Protótipos de funções
+void emitirErroLexico(int erro);
 %}
 
 /* Declarações regulares */
 /* Gerais */
 letra       [A-Za-z]
 decimal     [0-9]
-espaco      [ ]
+espaco      [ \t]
 nova_linha  \n
 
 /* Definições */
 id          {letra}+({letra}|{decimal}|_)*
-num_int     (+|-)?{decimal}+
-num_real    (+|-)?{decimal}+"."{decimal}+
+num_int     (\+|-)?{decimal}+
+num_real    (\+|-)?{decimal}+"."{decimal}+
 const_pi    [Pp][Ii]
 const_e     [Ee]
+var_x       (\+|-)?[Xx]
 
 %%
 
@@ -56,8 +64,6 @@ cos             return COSSENO;
 tan             return TANGENTE;
 abs             return ABSOLUTO;
 
-x               return VARIAVEL_X;
-
 "+"             return MAIS; 
 "-"             return MENOS;
 "*"             return MULTIPLICACAO;
@@ -79,13 +85,28 @@ x               return VARIAVEL_X;
 {const_pi}      return CONSTANTE_PI;
 {const_e}       return CONSTANTE_E;
 
-{nova_linha}    return NOVA_LINHA;
-
 {num_real}      return NUM_REAL;
 {num_int}       return NUM_INT;
 
+{var_x}         return VARIAVEL_X;
 {id}            return IDENTIFIER;        
 
-.               emitirErroLexico(TOKEN_DESCONHECIDO, numLinhas, numColunas); 
+{nova_linha}    return NOVA_LINHA;
+{espaco}        ;
+
+.               emitirErroLexico(TOKEN_DESCONHECIDO); 
 
 %%
+
+void emitirErroLexico(int erro)
+{
+    switch(erro)
+    {
+        case TOKEN_DESCONHECIDO:
+            cout << "Invalid Symbol: " << yytext << "\n";
+            break;
+
+        default:
+            break;
+    }
+}
