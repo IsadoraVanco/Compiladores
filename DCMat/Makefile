@@ -4,8 +4,8 @@ PROJETO = dcmat
 # ******** ARQUIVOS **********************************
 
 # Arquivos c/c++
-CXX_SRCS = main.cpp
-CXX_HEADERS =
+CXX_SRCS = main.cpp dcmat.cpp
+CXX_HEADERS = dcmat.h
 
 # Arquivos flex
 LEX_SRCS = lexico.l

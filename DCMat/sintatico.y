@@ -1,19 +1,20 @@
 %{
 #include <iostream>
+#include "dcmat.h"
 
 using std::cout;
 using std::endl;
 
 extern int yytext;
 
+// Tipos de erros
+enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
+
 int yylex(void);
 int yyparser(void);
 void yyerror(const void *string);
 
 void emitirErroSintatico(int erro);
-
-// Tipos de erros
-enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
 %}
 
 %defines "tokens.h"
@@ -36,27 +37,27 @@ enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
 %start inicial
 %%
 
-inicial     : config PONTO_VIRGULA      
-            | calcula PONTO_VIRGULA
-            | simbolos PONTO_VIRGULA
-            | expressao
+inicial     : config NOVA_LINHA         { return 1; }
+            | calcula NOVA_LINHA        { cout << "calcula\n"; }
+            | simbolos NOVA_LINHA       { cout << "simbolos\n"; }
+            | expressao NOVA_LINHA      { cout << "expressao1\n"; }
             | NOVA_LINHA                { return 1; }
             | QUIT                      { return 0; }
             ;
 
-config      : SHOW SETTINGS 
-            | RESET SETTINGS 
-            | SET H_VIEW limites 
-            | SET V_VIEW limites 
-            | SET AXIS ON
-            | SET AXIS OFF
-            | PLOT 
-            | PLOT PARENTESES_ESQ funcao PARENTESES_DIR 
-            | SET ERASE PLOT OFF 
-            | SET ERASE PLOT ON 
-            | RPN PARENTESES_ESQ expressao PARENTESES_DIR
-            | SET INTEGRAL_STEPS NUM_INT
-            | ABOUT
+config      : SHOW SETTINGS PONTO_VIRGULA           { dcmat->showSettings(); }
+            | RESET SETTINGS PONTO_VIRGULA          { dcmat->resetSettings(); }
+            | SET H_VIEW limites PONTO_VIRGULA
+            | SET V_VIEW limites PONTO_VIRGULA
+            | SET AXIS ON PONTO_VIRGULA
+            | SET AXIS OFF PONTO_VIRGULA
+            | PLOT PONTO_VIRGULA
+            | PLOT PARENTESES_ESQ funcao PARENTESES_DIR PONTO_VIRGULA
+            | SET ERASE PLOT OFF PONTO_VIRGULA
+            | SET ERASE PLOT ON PONTO_VIRGULA
+            | RPN PARENTESES_ESQ expressao PARENTESES_DIR PONTO_VIRGULA
+            | SET INTEGRAL_STEPS NUM_INT PONTO_VIRGULA
+            | ABOUT PONTO_VIRGULA
             ;
 
 funcao      : funcoes PARENTESES_ESQ expressao PARENTESES_DIR

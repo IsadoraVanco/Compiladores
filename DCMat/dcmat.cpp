@@ -1,0 +1,64 @@
+#include <iostream>
+#include <iomanip>
+#include "dcmat.h"
+
+using std::cout;
+using std::endl;
+using std::fixed;
+
+// Construtor
+DCMat::DCMat()
+{
+    resetSettings();
+}
+
+// Desconstrutor
+DCMat::~DCMat()
+{
+}
+
+void DCMat::setHView(double low, double high)
+{
+    if(low >= high){
+        showError("h_view_lo must be smaller than h_view_hi");
+    }else{
+        h_view_hi = high;
+        h_view_lo = low;
+    }
+}
+
+/******************************************************
+*       CONFIGURAÇÕES
+*******************************************************/
+
+void DCMat::showError(string message)
+{
+    cout << "\nERROR: " << message << "\n\n";
+}
+
+void DCMat::showSettings()
+{
+    cout << "\nh_view_lo: " << fixed << std::setprecision(6) << h_view_lo;
+    cout << "\nh_view_hi: " << fixed << std::setprecision(6) << h_view_hi;
+    cout << "\nv_view_lo: " << fixed << std::setprecision(6) << v_view_lo;
+    cout << "\nv_view_hi: " << fixed << std::setprecision(6) << v_view_hi;
+    cout << "\nfloat_precision: " <<  float_precision;
+    cout << "\nintegral_steps: " << integral_steps;
+    
+    cout << "\n\nDraw Axis: " << (draw_axis ? "ON" : "OFF");
+    cout << "\nErase Plot: " << (erase_plot ? "ON" : "OFF");
+    cout << "\nConnect Dots: " << (connect_dots ? "ON" : "OFF") << "\n" << endl;
+}
+
+void DCMat::resetSettings()
+{
+    h_view_lo = -6.5;
+    h_view_hi = 6.5;
+    v_view_lo = -3.5;
+    v_view_hi = 3.5;
+    float_precision = 6;
+    integral_steps = 1000;
+    draw_axis = true;
+    erase_plot = true;
+    connect_dots = false;
+}

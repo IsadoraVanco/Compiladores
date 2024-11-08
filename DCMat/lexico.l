@@ -13,7 +13,7 @@ bool leituraEntrada = true;
 enum {TOKEN_DESCONHECIDO};
 
 // Protótipos de funções
-void emitirErroLexico(int erro);
+int emitirErroLexico(int erro);
 %}
 
 /* Declarações regulares */
@@ -98,15 +98,18 @@ abs             return ABSOLUTO;
 
 %%
 
-void emitirErroLexico(int erro)
+int emitirErroLexico(int erro)
 {
     switch(erro)
     {
         case TOKEN_DESCONHECIDO:
             cout << "\nInvalid Symbol: " << yytext << "\n\n";
+            return 1;
             break;
 
         default:
             break;
     }
+
+    return 0;
 }
