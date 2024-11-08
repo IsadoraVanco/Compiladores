@@ -14,7 +14,7 @@ LEX_GNRT = lex.yy.c
 # Arquivos Bison
 BIS_SRCS = sintatico.y
 BIS_GNRT = sintatico.tab.c
-BIS_OUT = sintatico.tab.h
+BIS_OUT = tokens.h
 
 # ******** COMPILADORES E FLAGS **********************************
 
@@ -35,7 +35,7 @@ all: $(PROJETO)
 
 # Compilar o executável
 $(PROJETO): $(LEX_GNRT) $(BIS_GNRT) $(CXX_SRCS) $(CXX_HEADERS)
-	$(CXX) $^ $(CXX_FLAGS) $(LEX_FLAGS) -o $@
+	$(CXX) $^ $(CXX_FLAGS) $(LEX_FLAGS) -I. -o $@
 
 # Compilar o flex gerado
 $(LEX_GNRT): $(LEX_SRCS)
@@ -43,7 +43,7 @@ $(LEX_GNRT): $(LEX_SRCS)
 
 # Compilar o bison gerado
 $(BIS_GNRT): $(BIS_SRCS)
-	$(BIS) $(BIS_SRCS) $(BIS_FLAGS)
+	$(BIS) $(BIS_FLAGS) $(BIS_SRCS)
 
 # Compilar os arquivos fontes
 %.o: %.cpp $(CXX_HEADERS)

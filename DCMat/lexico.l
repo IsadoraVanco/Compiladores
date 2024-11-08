@@ -1,6 +1,6 @@
 %option noyywrap
 %{
-#include "sintatico.tab.h"
+#include "tokens.h"
 
 #include <iostream>
 
@@ -10,7 +10,7 @@ using std::cout;
 bool leituraEntrada = true;
 
 // Tipos de erros
-enum {TOKEN_DESCONHECIDO, ID_GRANDE};
+enum {TOKEN_DESCONHECIDO};
 
 // Protótipos de funções
 void emitirErroLexico(int erro);
@@ -103,7 +103,7 @@ void emitirErroLexico(int erro)
     switch(erro)
     {
         case TOKEN_DESCONHECIDO:
-            cout << "Invalid Symbol: " << yytext << "\n";
+            cout << "\nInvalid Symbol: " << yytext << "\n\n";
             break;
 
         default:
