@@ -60,15 +60,18 @@ config      : SHOW SETTINGS PONTO_VIRGULA           { dcmat->showSettings(); }
             | RESET SETTINGS PONTO_VIRGULA          { dcmat->resetSettings(); }
             | SET H_VIEW limites PONTO_VIRGULA      { dcmat->setHView(limites->low, limites->high); }
             | SET V_VIEW limites PONTO_VIRGULA      { dcmat->setVView(limites->low, limites->high); }
-            | SET AXIS ON PONTO_VIRGULA
-            | SET AXIS OFF PONTO_VIRGULA
+            | SET AXIS ON PONTO_VIRGULA             { dcmat->setDrawAxis(true); }
+            | SET AXIS OFF PONTO_VIRGULA            { dcmat->setDrawAxis(false); }
+            | SET ERASE PLOT ON PONTO_VIRGULA       { dcmat->setErasePlot(true); }
+            | SET ERASE PLOT OFF PONTO_VIRGULA      { dcmat->setErasePlot(false); }
+            | SET DOTS ON PONTO_VIRGULA             { dcmat->setConnectDots(true); }
+            | SET DOTS OFF PONTO_VIRGULA            { dcmat->setConnectDots(false); }
+            | ABOUT PONTO_VIRGULA                   { dcmat->showAbout(); }
+            | SET FLOAT PRECISION NUM_INT PONTO_VIRGULA { dcmat->setFloatPrecision($4); }
+            | SET INTEGRAL_STEPS NUM_INT PONTO_VIRGULA  { dcmat->setIntegralSteps($3); }
             | PLOT PONTO_VIRGULA
             | PLOT PARENTESES_ESQ funcao PARENTESES_DIR PONTO_VIRGULA
-            | SET ERASE PLOT OFF PONTO_VIRGULA
-            | SET ERASE PLOT ON PONTO_VIRGULA
             | RPN PARENTESES_ESQ expressao PARENTESES_DIR PONTO_VIRGULA
-            | SET INTEGRAL_STEPS NUM_INT PONTO_VIRGULA
-            | ABOUT PONTO_VIRGULA
             ;
 
 limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
@@ -132,7 +135,6 @@ simbolos    : IDENTIFIER ATRIBUICAO expressao
             | IDENTIFIER ATRIBUICAO matriz
             | IDENTIFIER
             | SHOW SYMBOLS
-            | SET FLOAT PRECISION NUM_INT
             ;
 
 %%

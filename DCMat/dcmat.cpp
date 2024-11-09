@@ -39,6 +39,39 @@ void DCMat::setVView(double low, double high)
     }
 }
 
+void DCMat::setFloatPrecision(int precision)
+{
+    if(precision < 0 || precision > 8){
+        showError("float precision must be from 0 to 8");
+    }else{
+        float_precision = precision;
+    }
+}
+
+void DCMat::setIntegralSteps(int steps)
+{
+    if(steps <= 0){
+        showError("integral_steps must be a positive non-zero integer");
+    }else{
+        integral_steps = steps;
+    }
+}
+
+void DCMat::setDrawAxis(bool state)
+{
+    draw_axis = state;
+}
+
+void DCMat::setErasePlot(bool state)
+{
+    erase_plot = state;
+}
+
+void DCMat::setConnectDots(bool state)
+{
+    connect_dots = state;
+}
+
 /******************************************************
 *       CONFIGURAÇÕES
 *******************************************************/
@@ -46,6 +79,16 @@ void DCMat::setVView(double low, double high)
 void DCMat::showError(string message)
 {
     cout << "\nERROR: " << message << "\n\n";
+}
+
+void DCMat::showAbout()
+{
+    cout << "\n+----------------------------------------------+" << endl;
+    cout << "|                                              |" << endl;
+    cout << "|              DCMAT - V. 2024.01              |" << endl;
+    cout << "|         202200560356 - Isadora Vanço         |" << endl;
+    cout << "|                                              |" << endl;
+    cout << "+----------------------------------------------+\n" << endl;
 }
 
 void DCMat::showSettings()

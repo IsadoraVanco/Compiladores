@@ -43,6 +43,38 @@ public:
      */
     void setVView(double low, double high);
 
+    /**
+     * @brief Atualiza o valor da precisão decimal mostrada
+     * @param precision O valor da precisão
+     */
+    void setFloatPrecision(int precision);
+
+    /**
+     * @brief Atualiza o valor do passo para soma da integral
+     * @param steps O valor do passo
+     */
+    void setIntegralSteps(int steps);
+
+    /**
+     * @brief Atualiza se os eixos serão desenhados ou não
+     * @param state O estado para o atributo
+     */
+    void setDrawAxis(bool state);
+
+    /**
+     * @brief Atualiza se a função será apagada ou não para
+     * plotar uma nova função
+     * @param state O estado para o atributo
+     */
+    void setErasePlot(bool state);
+
+    /**
+     * @brief Atualiza se os pontos serão conectados 
+     * no desenho da função
+     * @param state O estado para o atributo
+     */
+    void setConnectDots(bool state);
+
     /******************************************************
     *       CONFIGURAÇÕES
     *******************************************************/
@@ -51,6 +83,11 @@ public:
     * @brief Mostra uma mensagem de erro
     */
     void showError(string message);
+
+   /**
+    * @brief Mostra sobre o desenvolvedor
+    */
+    void showAbout();
 
    /**
     * @brief Mostra os valores das configurações
