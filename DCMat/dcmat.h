@@ -1,6 +1,7 @@
 #ifndef _DCMAT_H_
 #define _DCMAT_H_
 
+#include "types.h"
 #include <string>
 
 using std::string;
@@ -13,10 +14,8 @@ private:
     double e = 2.71828182;
 
     // Configurações do dcmat
-    double h_view_lo;
-    double h_view_hi;
-    double v_view_lo;
-    double v_view_hi;
+    Limites h_view;
+    Limites v_view;
     int float_precision;
     int integral_steps;
     bool draw_axis;
@@ -36,6 +35,13 @@ public:
      * @param high O limite superior
      */
     void setHView(double low, double high);
+
+    /**
+     * @brief Atualiza os valores do view vertical
+     * @param low O limite inferior
+     * @param high O limite superior
+     */
+    void setVView(double low, double high);
 
     /******************************************************
     *       CONFIGURAÇÕES
@@ -58,5 +64,6 @@ public:
 };
 
 extern DCMat *dcmat;
+extern Limites *limites;
 
 #endif

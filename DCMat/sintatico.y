@@ -1,5 +1,6 @@
 %{
 #include <iostream>
+#include "types.h"
 #include "dcmat.h"
 
 using std::cout;
@@ -12,10 +13,15 @@ enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
 
 int yylex(void);
 int yyparser(void);
-void yyerror(const void *string);
+int yyerror(const void *string);
 
 void emitirErroSintatico(int erro);
 %}
+
+%union {
+    double numDouble;
+    int numInt;
+}
 
 %defines "tokens.h"
 
@@ -32,23 +38,28 @@ void emitirErroSintatico(int erro);
 
 %token SENO COSSENO TANGENTE ABSOLUTO
 %token MAIS MENOS MULTIPLICACAO DIVISAO POTENCIA RESTO 
-%token NUM_REAL NUM_INT IDENTIFIER VARIAVEL_X CONSTANTE_PI CONSTANTE_E
+%token IDENTIFIER VARIAVEL_X CONSTANTE_PI CONSTANTE_E
+
+%token <numDouble> NUM_REAL
+%token <numInt> NUM_INT 
+
+%type <numDouble> valor
 
 %start inicial
 %%
 
 inicial     : config NOVA_LINHA         { return 1; }
-            | calcula NOVA_LINHA        { cout << "calcula\n"; }
-            | simbolos NOVA_LINHA       { cout << "simbolos\n"; }
-            | expressao NOVA_LINHA      { cout << "expressao1\n"; }
+            | calcula NOVA_LINHA        { cout << "calcula\n"; return 1; }
+            | simbolos NOVA_LINHA       { cout << "simbolos\n"; return 1; }
+            | expressao NOVA_LINHA      { cout << "expressao1\n"; return 1; }
             | NOVA_LINHA                { return 1; }
             | QUIT                      { return 0; }
             ;
 
 config      : SHOW SETTINGS PONTO_VIRGULA           { dcmat->showSettings(); }
             | RESET SETTINGS PONTO_VIRGULA          { dcmat->resetSettings(); }
-            | SET H_VIEW limites PONTO_VIRGULA
-            | SET V_VIEW limites PONTO_VIRGULA
+            | SET H_VIEW limites PONTO_VIRGULA      { dcmat->setHView(limites->low, limites->high); }
+            | SET V_VIEW limites PONTO_VIRGULA      { dcmat->setVView(limites->low, limites->high); }
             | SET AXIS ON PONTO_VIRGULA
             | SET AXIS OFF PONTO_VIRGULA
             | PLOT PONTO_VIRGULA
@@ -58,6 +69,13 @@ config      : SHOW SETTINGS PONTO_VIRGULA           { dcmat->showSettings(); }
             | RPN PARENTESES_ESQ expressao PARENTESES_DIR PONTO_VIRGULA
             | SET INTEGRAL_STEPS NUM_INT PONTO_VIRGULA
             | ABOUT PONTO_VIRGULA
+            ;
+
+limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
+            ;
+
+valor       : NUM_INT       { $$ = $1; }
+            | NUM_REAL      { $$ = $1; }
             ;
 
 funcao      : funcoes PARENTESES_ESQ expressao PARENTESES_DIR
@@ -106,15 +124,8 @@ nValor      : VIRGULA valor nValor
             | // Vazio
             ;
 
-valor       : NUM_INT
-            | NUM_REAL
-            ;
-
 nValores    : VIRGULA COLCHETE_ESQ valor nValor COLCHETE_DIR nValores
             | // Vazio
-            ;
-
-limites     : valor DOIS_PONTOS valor
             ;
 
 simbolos    : IDENTIFIER ATRIBUICAO expressao
@@ -145,8 +156,9 @@ void emitirErroSintatico(int erro)
     } 
 }
 
-void yyerror(const void *string)
+int yyerror(const void *string)
 {
     emitirErroSintatico(TOKEN_FALTANTE);
     cout << "erro sintatico" << endl;
+    return 1;
 }

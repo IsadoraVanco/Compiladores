@@ -21,9 +21,21 @@ void DCMat::setHView(double low, double high)
 {
     if(low >= high){
         showError("h_view_lo must be smaller than h_view_hi");
+        // cout << low << high;
     }else{
-        h_view_hi = high;
-        h_view_lo = low;
+        h_view.high = high;
+        h_view.low = low;
+    }
+}
+
+void DCMat::setVView(double low, double high)
+{
+    if(low >= high){
+        showError("v_view_lo must be smaller than v_view_hi");
+        // cout << low << high;
+    }else{
+        v_view.high = high;
+        v_view.low = low;
     }
 }
 
@@ -38,10 +50,10 @@ void DCMat::showError(string message)
 
 void DCMat::showSettings()
 {
-    cout << "\nh_view_lo: " << fixed << std::setprecision(6) << h_view_lo;
-    cout << "\nh_view_hi: " << fixed << std::setprecision(6) << h_view_hi;
-    cout << "\nv_view_lo: " << fixed << std::setprecision(6) << v_view_lo;
-    cout << "\nv_view_hi: " << fixed << std::setprecision(6) << v_view_hi;
+    cout << "\nh_view_lo: " << fixed << std::setprecision(6) << h_view.low;
+    cout << "\nh_view_hi: " << fixed << std::setprecision(6) << h_view.high;
+    cout << "\nv_view_lo: " << fixed << std::setprecision(6) << v_view.low;
+    cout << "\nv_view_hi: " << fixed << std::setprecision(6) << v_view.high;
     cout << "\nfloat_precision: " <<  float_precision;
     cout << "\nintegral_steps: " << integral_steps;
     
@@ -52,10 +64,10 @@ void DCMat::showSettings()
 
 void DCMat::resetSettings()
 {
-    h_view_lo = -6.5;
-    h_view_hi = 6.5;
-    v_view_lo = -3.5;
-    v_view_hi = 3.5;
+    h_view.low = -6.5;
+    h_view.high = 6.5;
+    v_view.low = -3.5;
+    v_view.high = 3.5;
     float_precision = 6;
     integral_steps = 1000;
     draw_axis = true;

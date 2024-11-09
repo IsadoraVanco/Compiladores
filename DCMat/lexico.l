@@ -85,8 +85,8 @@ abs             return ABSOLUTO;
 {const_pi}      return CONSTANTE_PI;
 {const_e}       return CONSTANTE_E;
 
-{num_real}      return NUM_REAL;
-{num_int}       return NUM_INT;
+{num_real}      yylval.numDouble = atof(yytext); return NUM_REAL;
+{num_int}       yylval.numInt = atoi(yytext); return NUM_INT;
 
 {var_x}         return VARIAVEL_X;
 {id}            return IDENTIFIER;        

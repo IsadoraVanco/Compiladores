@@ -7,11 +7,14 @@ using std::cout;
 extern int yyparse();
 extern int leituraEntrada;
 
-// Variável global do dcmat
+// Variáveis globais
+// Funções do dcmat
 DCMat *dcmat = nullptr;
+Limites *limites;
 
 int main() {
     dcmat = new DCMat();
+    limites = new Limites{0, 0};
 
     int retorno = 1;
 
@@ -22,6 +25,7 @@ int main() {
     }while(retorno);
 
     delete dcmat;
+    delete limites;
 
     return 0;
 }
