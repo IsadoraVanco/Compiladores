@@ -52,3 +52,6 @@ $(BIS_GNRT): $(BIS_SRCS)
 # Limpa os arquivos gerados
 clean:
 	rm -f $(PROJETO) $(LEX_GNRT) $(BIS_GNRT) $(BIS_OUT) *.o
+
+run: $(PROJETO)
+	./$(PROJETO)

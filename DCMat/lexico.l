@@ -6,9 +6,6 @@
 
 using std::cout;
 
-// Para controlar se será a leitura da entrada inteira
-bool leituraEntrada = true;
-
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO};
 
@@ -25,11 +22,11 @@ nova_linha  \n
 
 /* Definições */
 id          {letra}+({letra}|{decimal}|_)*
-num_int     (\+|-)?{decimal}+
-num_real    (\+|-)?{decimal}+"."{decimal}+
+num_int     {decimal}+
+num_real    {decimal}+"."{decimal}+
 const_pi    [Pp][Ii]
 const_e     [Ee]
-var_x       (\+|-)?[Xx]
+var_x       [Xx]
 
 %%
 
@@ -71,15 +68,15 @@ abs             return ABSOLUTO;
 "^"             return POTENCIA;
 "%"             return RESTO;
 
-"("             return PARENTESES_ESQ;
-")"             return PARENTESES_DIR;
+"("             return PRT_ESQ;
+")"             return PRT_DIR;
 
 ":"             return DOIS_PONTOS;
 "="             return IGUAL;
 ":="            return ATRIBUICAO;
 "["             return COLCHETE_ESQ;
 "]"             return COLCHETE_DIR;
-";"             return PONTO_VIRGULA;
+";"             return PNT_VIRG;
 ","             return VIRGULA;
 
 {const_pi}      return CONSTANTE_PI;
@@ -89,7 +86,7 @@ abs             return ABSOLUTO;
 {num_int}       yylval.numInt = atoi(yytext); return NUM_INT;
 
 {var_x}         return VARIAVEL_X;
-{id}            return IDENTIFIER;        
+{id}            yylval.text = strdup(yytext); return IDENTIFIER;        
 
 {nova_linha}    return NOVA_LINHA;
 {espaco}        ;

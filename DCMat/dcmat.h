@@ -3,8 +3,12 @@
 
 #include "types.h"
 #include <string>
+#include <vector>
+#include <unordered_map>
 
 using std::string;
+using std::vector;
+using std::unordered_map;
 
 class DCMat
 {
@@ -12,6 +16,10 @@ private:
     // Constantes
     double pi = 3.14159265;
     double e = 2.71828182;
+    int maxMatrix = 10;
+
+    // Flags
+    bool flagErro;
 
     // Configurações do dcmat
     Limites h_view;
@@ -22,12 +30,28 @@ private:
     bool erase_plot;
     bool connect_dots;
 
+    // Variáveis e definições
+    vector<vector<double>> matrix;
+    unordered_map<string, Variavel> symbols;
+
 public:
     // Construtor
     DCMat();
 
     // Desconstrutor
     ~DCMat();
+
+    /**
+     * @brief Retorna o valor de Pi
+     * @return O valor de pi
+     */
+    double getPi();
+
+    /**
+     * @brief Retorna o valor do número de Euler
+     * @return O valor de e
+     */
+    double getNumE();
 
     /**
      * @brief Atualiza os valores do view horizontal
@@ -98,6 +122,60 @@ public:
      * @brief Redefine as configurações padrão
      */
     void resetSettings();
+    
+    /******************************************************
+    *       CALCULAR VALORES
+    *******************************************************/
+
+   /**
+    * @brief Mostra o valor da expressão
+    */
+   void showValue(double value);
+
+    /**
+     * @brief Mostra o erro de divisão
+     */
+   void showDivideError();
+
+    /**
+     * @brief Mostra o erro de utilização da variável x
+     */
+   void showVariableXError();
+
+    /******************************************************
+    *       SÍMBOLOS E DECLARAÇÕES
+    *******************************************************/
+
+    /**
+    * @brief Mostra a matriz definida
+    */
+    void showMatrix();
+
+    /**
+    * @brief Mostra o valor de um símbolo definido
+    * @param name Nome do símbolo 
+    */
+    void showSymbol(string name);
+
+    /**
+    * @brief Mostra todos os símbolos definidos
+    */
+    void showAllSymbols();
+
+    /**
+     * @brief Retorna o valor de um simbolo, caso exista
+     * @param name O nome do símbolo
+     * @return O valor de um símbolo
+     */
+    double getSymbol(string name);
+
+    /**
+     * @brief Adiciona um símbolo na lista
+     * @param name O nome do símbolo
+     * @param type O tipo do símbolo
+     * @param value O valor do símbolo
+     */
+    void addSymbol(string name, Tipo type, double value);
 };
 
 extern DCMat *dcmat;

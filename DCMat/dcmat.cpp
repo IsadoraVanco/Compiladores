@@ -10,11 +10,23 @@ using std::fixed;
 DCMat::DCMat()
 {
     resetSettings();
+    matrix.resize(maxMatrix, vector<double>(maxMatrix));
+    flagErro = false;
 }
 
 // Desconstrutor
 DCMat::~DCMat()
 {
+}
+
+double DCMat::getPi()
+{
+    return pi;
+}
+
+double DCMat::getNumE()
+{
+    return e;
 }
 
 void DCMat::setHView(double low, double high)
@@ -116,4 +128,93 @@ void DCMat::resetSettings()
     draw_axis = true;
     erase_plot = true;
     connect_dots = false;
+}
+
+/******************************************************
+*       CALCULAR VALORES
+*******************************************************/
+
+void DCMat::showValue(double value)
+{
+    if(!flagErro){
+        cout << "\n" << fixed << std::setprecision(float_precision) << value << "\n\n";
+    }
+    flagErro = false;
+}   
+
+void DCMat::showDivideError()
+{
+    cout << "\ninf\n\n";
+}
+
+void DCMat::showVariableXError()
+{
+    cout << "\nThe x variable cannot be present on expressions.\n\n";
+    flagErro = true;
+}
+
+/******************************************************
+*       VARIÁVEIS E DECLARAÇÕES
+*******************************************************/
+
+void DCMat::showMatrix()
+{
+    if(matrix.empty()){
+        cout << "\nNo matrix defined!\n";
+    }else{
+
+    }
+}
+
+void DCMat::showSymbol(string name)
+{
+    if(symbols.find(name) != symbols.end()){
+        if(symbols[name].tipo == Tipo::MATRIX){
+            showMatrix();
+        }else{
+            cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor << "\n" << endl;
+        }      
+    }else{
+        cout << "\nUndefined symbol\n\n";
+    }
+}
+
+void DCMat::showAllSymbols()
+{
+    cout << "\n";
+
+    for(const auto& simbolo : symbols){
+        cout << simbolo.first << " - ";
+
+        if(simbolo.second.tipo == Tipo::FLOAT){
+            cout << "FLOAT";
+        }else{
+            cout << "MATRIX [" << fixed << std::setprecision(0) << simbolo.second.valor << "]";
+            
+            if(simbolo.second.valor > 1){
+                cout << "[" << fixed << std::setprecision(0) << simbolo.second.valor << "]";
+            }
+        }
+        
+        cout << "\n";
+    }
+
+    cout << "\n";
+}
+
+double DCMat::getSymbol(string name)
+{
+    if(symbols.find(name) != symbols.end()){
+        return symbols[name].valor;
+    }else{
+        cout << "\nUndefined symbol[" << name << "]\n\n";
+        flagErro = true;
+        return 0;
+    }
+}
+
+void DCMat::addSymbol(string name, Tipo type, double value)
+{
+    symbols[name] = {type, value, NULL};
+    showValue(value);
 }

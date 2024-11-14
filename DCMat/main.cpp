@@ -5,11 +5,11 @@
 using std::cout;
 
 extern int yyparse();
-extern int leituraEntrada;
 
 // Variáveis globais
 // Funções do dcmat
 DCMat *dcmat = nullptr;
+// Armazena os limites lidos
 Limites *limites;
 
 int main() {
@@ -19,7 +19,6 @@ int main() {
     int retorno = 1;
 
     do{
-        leituraEntrada = true;
         cout << ">";
         retorno = yyparse();
     }while(retorno);

@@ -1,5 +1,6 @@
 %{
 #include <iostream>
+#include <cmath>
 #include "types.h"
 #include "dcmat.h"
 
@@ -10,6 +11,8 @@ extern int yytext;
 
 // Tipos de erros
 enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
+// Tipos de retornos
+enum { FIM = 0, SUCESSO};
 
 int yylex(void);
 int yyparser(void);
@@ -21,6 +24,7 @@ void emitirErroSintatico(int erro);
 %union {
     double numDouble;
     int numInt;
+    char *text;
 }
 
 %defines "tokens.h"
@@ -31,47 +35,45 @@ void emitirErroSintatico(int erro);
 
 %token INTEGRATE SUM MATRIX SOLVE DETERMINANT LINEAR_SYS SYMBOLS
 
-%token PONTO_VIRGULA DOIS_PONTOS VIRGULA PARENTESES_ESQ PARENTESES_DIR COLCHETE_ESQ COLCHETE_DIR
+%token PNT_VIRG DOIS_PONTOS VIRGULA PRT_ESQ PRT_DIR COLCHETE_ESQ COLCHETE_DIR
 %token ATRIBUICAO IGUAL
 
 %token NOVA_LINHA ERRO
 
 %token SENO COSSENO TANGENTE ABSOLUTO
 %token MAIS MENOS MULTIPLICACAO DIVISAO POTENCIA RESTO 
-%token IDENTIFIER VARIAVEL_X CONSTANTE_PI CONSTANTE_E
 
-%token <numDouble> NUM_REAL
+%token <text> IDENTIFIER CONSTANTE_E CONSTANTE_PI VARIAVEL_X
 %token <numInt> NUM_INT 
+%token <numDouble> NUM_REAL
 
-%type <numDouble> valor
+%type <numDouble> valor valorExpr 
+%type <numDouble> expressao exprCalcula 
+%type <numDouble> funcao
 
 %start inicial
 %%
 
-inicial     : config NOVA_LINHA         { return 1; }
-            | calcula NOVA_LINHA        { cout << "calcula\n"; return 1; }
-            | simbolos NOVA_LINHA       { cout << "simbolos\n"; return 1; }
-            | expressao NOVA_LINHA      { cout << "expressao1\n"; return 1; }
-            | NOVA_LINHA                { return 1; }
-            | QUIT                      { return 0; }
+inicial     : config NOVA_LINHA         { cout << "config\n"; return SUCESSO; }
+            | simbolos NOVA_LINHA       { cout << "simbolos\n"; return SUCESSO; }
+            | calcula NOVA_LINHA        { cout << "calcula\n"; return SUCESSO; }
+            | NOVA_LINHA                { return SUCESSO; }
+            | QUIT                      { return FIM; }
             ;
 
-config      : SHOW SETTINGS PONTO_VIRGULA           { dcmat->showSettings(); }
-            | RESET SETTINGS PONTO_VIRGULA          { dcmat->resetSettings(); }
-            | SET H_VIEW limites PONTO_VIRGULA      { dcmat->setHView(limites->low, limites->high); }
-            | SET V_VIEW limites PONTO_VIRGULA      { dcmat->setVView(limites->low, limites->high); }
-            | SET AXIS ON PONTO_VIRGULA             { dcmat->setDrawAxis(true); }
-            | SET AXIS OFF PONTO_VIRGULA            { dcmat->setDrawAxis(false); }
-            | SET ERASE PLOT ON PONTO_VIRGULA       { dcmat->setErasePlot(true); }
-            | SET ERASE PLOT OFF PONTO_VIRGULA      { dcmat->setErasePlot(false); }
-            | SET DOTS ON PONTO_VIRGULA             { dcmat->setConnectDots(true); }
-            | SET DOTS OFF PONTO_VIRGULA            { dcmat->setConnectDots(false); }
-            | ABOUT PONTO_VIRGULA                   { dcmat->showAbout(); }
-            | SET FLOAT PRECISION NUM_INT PONTO_VIRGULA { dcmat->setFloatPrecision($4); }
-            | SET INTEGRAL_STEPS NUM_INT PONTO_VIRGULA  { dcmat->setIntegralSteps($3); }
-            | PLOT PONTO_VIRGULA
-            | PLOT PARENTESES_ESQ funcao PARENTESES_DIR PONTO_VIRGULA
-            | RPN PARENTESES_ESQ expressao PARENTESES_DIR PONTO_VIRGULA
+config      : ABOUT PNT_VIRG                        { dcmat->showAbout(); }
+            | SHOW SETTINGS PNT_VIRG                { dcmat->showSettings(); }
+            | RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
+            | SET AXIS ON PNT_VIRG                  { dcmat->setDrawAxis(true); }
+            | SET AXIS OFF PNT_VIRG                 { dcmat->setDrawAxis(false); }
+            | SET ERASE PLOT ON PNT_VIRG            { dcmat->setErasePlot(true); }
+            | SET ERASE PLOT OFF PNT_VIRG           { dcmat->setErasePlot(false); }
+            | SET DOTS ON PNT_VIRG                  { dcmat->setConnectDots(true); }
+            | SET DOTS OFF PNT_VIRG                 { dcmat->setConnectDots(false); }
+            | SET FLOAT PRECISION NUM_INT PNT_VIRG  { dcmat->setFloatPrecision($4); }
+            | SET INTEGRAL_STEPS NUM_INT PNT_VIRG   { dcmat->setIntegralSteps($3); }
+            | SET H_VIEW limites PNT_VIRG           { dcmat->setHView(limites->low, limites->high); }
+            | SET V_VIEW limites PNT_VIRG           { dcmat->setVView(limites->low, limites->high); }
             ;
 
 limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
@@ -81,49 +83,16 @@ valor       : NUM_INT       { $$ = $1; }
             | NUM_REAL      { $$ = $1; }
             ;
 
-funcao      : funcoes PARENTESES_ESQ expressao PARENTESES_DIR
-            ;
-
-funcoes     : SENO
-            | COSSENO
-            | TANGENTE
-            | ABSOLUTO
-            ;
-
-expressao   : expressao operador expressao
-            | PARENTESES_ESQ expressao PARENTESES_DIR
-            | valorExpr
-            | funcao
-            ;
-
-valorExpr   : NUM_INT
-            | NUM_REAL
-            | VARIAVEL_X
-            | CONSTANTE_E
-            | CONSTANTE_PI
-            | IDENTIFIER
-            ;
-
-operador    : MAIS
-            | MENOS
-            | MULTIPLICACAO
-            | DIVISAO
-            | POTENCIA
-            | RESTO
-            ;
-
-calcula     : INTEGRATE PARENTESES_ESQ limites VIRGULA funcao PARENTESES_DIR
-            | SUM PARENTESES_ESQ VIRGULA limites VIRGULA expressao PARENTESES_DIR
-            | MATRIX IGUAL matriz
-            | SHOW MATRIX
-            | SOLVE DETERMINANT
-            | SOLVE LINEAR_SYS
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addVariable($1, Tipo::FLOAT, $3); }
+            | IDENTIFIER ATRIBUICAO matriz
+            | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(); }
+            | SHOW SYMBOLS PNT_VIRG                         { dcmat->showAllSymbols(); }
             ;
 
 matriz      : COLCHETE_ESQ COLCHETE_ESQ valor nValor COLCHETE_DIR nValores COLCHETE_DIR
             ;
 
-nValor      : VIRGULA valor nValor
+nValor      : VIRGULA valor nValor  
             | // Vazio
             ;
 
@@ -131,10 +100,52 @@ nValores    : VIRGULA COLCHETE_ESQ valor nValor COLCHETE_DIR nValores
             | // Vazio
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao
-            | IDENTIFIER ATRIBUICAO matriz
-            | IDENTIFIER
-            | SHOW SYMBOLS
+funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
+            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = std::cos($3); }
+            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = std::tan($3); }
+            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = std::abs($3); }
+            ;
+
+// Colocar em ordem de prioridade
+expressao   : expressao MAIS expressao              { $$ = $1 + $3; }
+            | expressao MENOS expressao             { $$ = $1 - $3; }
+            | expressao MULTIPLICACAO expressao     { $$ = $1 * $3; }
+            | expressao POTENCIA expressao          { $$ = std::pow($1, $3); }
+            | expressao RESTO expressao             { $$ = std::fmod($1, $3); }
+            | PRT_ESQ expressao PRT_DIR             { $$ = $2; }   
+            | valorExpr                             { $$ = $1; }
+            | expressao DIVISAO expressao           
+            { 
+                if ($3 == 0){
+                    dcmat->showDivideError();
+                    return 1;
+                }else{
+                    $$ = $1 / $3;
+                }
+            }
+            ;
+
+valorExpr   : NUM_INT       { $$ = $1; }
+            | NUM_REAL      { $$ = $1; }
+            | CONSTANTE_E   { $$ = dcmat->getNumE(); }
+            | CONSTANTE_PI  { $$ = dcmat->getPi(); }
+            | IDENTIFIER    { $$ = dcmat->getVariable($1); free($1); }
+            ;
+
+calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
+            | SUM PRT_ESQ VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG
+            | MATRIX IGUAL matriz PNT_VIRG
+            | SOLVE DETERMINANT PNT_VIRG
+            | SOLVE LINEAR_SYS PNT_VIRG   
+            | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
+            | PLOT PNT_VIRG
+            | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
+            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG
+            | exprCalcula                                   { dcmat->showValue($1); }
+            ;
+
+exprCalcula : expressao         { $$ = $1; }
+            | VARIAVEL_X        { dcmat->showVariableXError(); }
             ;
 
 %%
@@ -162,5 +173,5 @@ int yyerror(const void *string)
 {
     emitirErroSintatico(TOKEN_FALTANTE);
     cout << "erro sintatico" << endl;
-    return 1;
+    return SUCESSO;
 }
