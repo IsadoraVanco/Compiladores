@@ -19,20 +19,10 @@ DCMat::~DCMat()
 {
 }
 
-double DCMat::getPi()
-{
-    return pi;
-}
-
-double DCMat::getNumE()
-{
-    return e;
-}
-
 void DCMat::setHView(double low, double high)
 {
     if(low >= high){
-        showError("h_view_lo must be smaller than h_view_hi");
+        showErrorMessage("h_view_lo must be smaller than h_view_hi");
         // cout << low << high;
     }else{
         h_view.high = high;
@@ -43,7 +33,7 @@ void DCMat::setHView(double low, double high)
 void DCMat::setVView(double low, double high)
 {
     if(low >= high){
-        showError("v_view_lo must be smaller than v_view_hi");
+        showErrorMessage("v_view_lo must be smaller than v_view_hi");
         // cout << low << high;
     }else{
         v_view.high = high;
@@ -54,7 +44,7 @@ void DCMat::setVView(double low, double high)
 void DCMat::setFloatPrecision(int precision)
 {
     if(precision < 0 || precision > 8){
-        showError("float precision must be from 0 to 8");
+        showErrorMessage("float precision must be from 0 to 8");
     }else{
         float_precision = precision;
     }
@@ -63,7 +53,7 @@ void DCMat::setFloatPrecision(int precision)
 void DCMat::setIntegralSteps(int steps)
 {
     if(steps <= 0){
-        showError("integral_steps must be a positive non-zero integer");
+        showErrorMessage("integral_steps must be a positive non-zero integer");
     }else{
         integral_steps = steps;
     }
@@ -88,9 +78,27 @@ void DCMat::setConnectDots(bool state)
 *       CONFIGURAÇÕES
 *******************************************************/
 
-void DCMat::showError(string message)
+void DCMat::showErrorMessage(string message)
 {
     cout << "\nERROR: " << message << "\n\n";
+}
+
+void DCMat::showError(Erro error)
+{
+    switch (error)
+    {
+    case Erro::DividedByZero:
+        cout << "\ninf\n\n";
+        break;
+
+    case Erro::VariableX:
+        cout << "\nThe x variable cannot be present on expressions.\n\n";
+        flagErro = true;
+        break;
+    
+    default:
+        break;
+    }
 }
 
 void DCMat::showAbout()
@@ -141,17 +149,6 @@ void DCMat::showValue(double value)
     }
     flagErro = false;
 }   
-
-void DCMat::showDivideError()
-{
-    cout << "\ninf\n\n";
-}
-
-void DCMat::showVariableXError()
-{
-    cout << "\nThe x variable cannot be present on expressions.\n\n";
-    flagErro = true;
-}
 
 /******************************************************
 *       VARIÁVEIS E DECLARAÇÕES

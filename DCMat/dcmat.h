@@ -10,12 +10,15 @@ using std::string;
 using std::vector;
 using std::unordered_map;
 
+#define PI 3.14159265
+#define NUM_EULER 2.71828182
+
+enum class Erro {DividedByZero, VariableX};
+
 class DCMat
 {
 private:
     // Constantes
-    double pi = 3.14159265;
-    double e = 2.71828182;
     int maxMatrix = 10;
 
     // Flags
@@ -40,18 +43,6 @@ public:
 
     // Desconstrutor
     ~DCMat();
-
-    /**
-     * @brief Retorna o valor de Pi
-     * @return O valor de pi
-     */
-    double getPi();
-
-    /**
-     * @brief Retorna o valor do número de Euler
-     * @return O valor de e
-     */
-    double getNumE();
 
     /**
      * @brief Atualiza os valores do view horizontal
@@ -106,7 +97,13 @@ public:
    /**
     * @brief Mostra uma mensagem de erro
     */
-    void showError(string message);
+    void showErrorMessage(string message);
+
+    /**
+     * @brief Mostra um erro
+     * @param error O tipo do erro
+     */
+    void showError(Erro error);
 
    /**
     * @brief Mostra sobre o desenvolvedor
@@ -131,16 +128,6 @@ public:
     * @brief Mostra o valor da expressão
     */
    void showValue(double value);
-
-    /**
-     * @brief Mostra o erro de divisão
-     */
-   void showDivideError();
-
-    /**
-     * @brief Mostra o erro de utilização da variável x
-     */
-   void showVariableXError();
 
     /******************************************************
     *       SÍMBOLOS E DECLARAÇÕES

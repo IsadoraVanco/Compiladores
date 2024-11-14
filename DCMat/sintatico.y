@@ -83,7 +83,7 @@ valor       : NUM_INT       { $$ = $1; }
             | NUM_REAL      { $$ = $1; }
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addVariable($1, Tipo::FLOAT, $3); }
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($1, Tipo::FLOAT, $3); }
             | IDENTIFIER ATRIBUICAO matriz
             | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(); }
             | SHOW SYMBOLS PNT_VIRG                         { dcmat->showAllSymbols(); }
@@ -117,7 +117,7 @@ expressao   : expressao MAIS expressao              { $$ = $1 + $3; }
             | expressao DIVISAO expressao           
             { 
                 if ($3 == 0){
-                    dcmat->showDivideError();
+                    dcmat->showError(Erro::DividedByZero);
                     return 1;
                 }else{
                     $$ = $1 / $3;
@@ -127,9 +127,9 @@ expressao   : expressao MAIS expressao              { $$ = $1 + $3; }
 
 valorExpr   : NUM_INT       { $$ = $1; }
             | NUM_REAL      { $$ = $1; }
-            | CONSTANTE_E   { $$ = dcmat->getNumE(); }
-            | CONSTANTE_PI  { $$ = dcmat->getPi(); }
-            | IDENTIFIER    { $$ = dcmat->getVariable($1); free($1); }
+            | CONSTANTE_E   { $$ = NUM_EULER; }
+            | CONSTANTE_PI  { $$ = PI; }
+            | IDENTIFIER    { $$ = dcmat->getSymbol($1); free($1); }
             ;
 
 calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
@@ -145,7 +145,7 @@ calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             ;
 
 exprCalcula : expressao         { $$ = $1; }
-            | VARIAVEL_X        { dcmat->showVariableXError(); }
+            | VARIAVEL_X        { dcmat->showError(Erro::VariableX); }
             ;
 
 %%
