@@ -88,11 +88,11 @@ void DCMat::showError(Erro error)
     switch (error)
     {
     case Erro::DividedByZero:
-        cout << "\ninf\n\n";
+        cout << "\ninf";
         break;
 
     case Erro::VariableX:
-        cout << "\nThe x variable cannot be present on expressions.\n\n";
+        cout << "\nThe x variable cannot be present on expressions.";
         flagErro = true;
         break;
     
@@ -108,7 +108,7 @@ void DCMat::showAbout()
     cout << "|              DCMAT - V. 2024.01              |" << endl;
     cout << "|         202200560356 - Isadora Vanço         |" << endl;
     cout << "|                                              |" << endl;
-    cout << "+----------------------------------------------+\n" << endl;
+    cout << "+----------------------------------------------+";
 }
 
 void DCMat::showSettings()
@@ -122,7 +122,7 @@ void DCMat::showSettings()
     
     cout << "\n\nDraw Axis: " << (draw_axis ? "ON" : "OFF");
     cout << "\nErase Plot: " << (erase_plot ? "ON" : "OFF");
-    cout << "\nConnect Dots: " << (connect_dots ? "ON" : "OFF") << "\n" << endl;
+    cout << "\nConnect Dots: " << (connect_dots ? "ON" : "OFF");
 }
 
 void DCMat::resetSettings()
@@ -145,7 +145,7 @@ void DCMat::resetSettings()
 void DCMat::showValue(double value)
 {
     if(!flagErro){
-        cout << "\n" << fixed << std::setprecision(float_precision) << value << "\n\n";
+        cout << "\n" << fixed << std::setprecision(float_precision) << value;
     }
     flagErro = false;
 }   
@@ -157,7 +157,7 @@ void DCMat::showValue(double value)
 void DCMat::showMatrix()
 {
     if(matrix.empty()){
-        cout << "\nNo matrix defined!\n";
+        cout << "\nNo matrix defined!";
     }else{
 
     }
@@ -169,18 +169,18 @@ void DCMat::showSymbol(string name)
         if(symbols[name].tipo == Tipo::MATRIX){
             showMatrix();
         }else{
-            cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor << "\n" << endl;
+            cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor;
         }      
     }else{
-        cout << "\nUndefined symbol\n\n";
+        cout << "\nUndefined symbol";
     }
 }
 
 void DCMat::showAllSymbols()
 {
-    cout << "\n";
-
     for(const auto& simbolo : symbols){
+        cout << "\n";
+
         cout << simbolo.first << " - ";
 
         if(simbolo.second.tipo == Tipo::FLOAT){
@@ -192,11 +192,7 @@ void DCMat::showAllSymbols()
                 cout << "[" << fixed << std::setprecision(0) << simbolo.second.valor << "]";
             }
         }
-        
-        cout << "\n";
     }
-
-    cout << "\n";
 }
 
 double DCMat::getSymbol(string name)
@@ -204,7 +200,7 @@ double DCMat::getSymbol(string name)
     if(symbols.find(name) != symbols.end()){
         return symbols[name].valor;
     }else{
-        cout << "\nUndefined symbol[" << name << "]\n\n";
+        cout << "\nUndefined symbol [" << name << "]";
         flagErro = true;
         return 0;
     }
@@ -212,6 +208,9 @@ double DCMat::getSymbol(string name)
 
 void DCMat::addSymbol(string name, Tipo type, double value)
 {
-    symbols[name] = {type, value, NULL};
-    showValue(value);
+    if(!flagErro){
+        symbols[name] = {type, value, NULL};
+        showValue(value);
+    }
+    flagErro = false;
 }

@@ -18,7 +18,8 @@ int yylex(void);
 int yyparser(void);
 int yyerror(const void *string);
 
-void emitirErroSintatico(int erro);
+int separarComandos();
+int emitirErroSintatico(int erro);
 %}
 
 %union {
@@ -47,23 +48,28 @@ void emitirErroSintatico(int erro);
 %token <numInt> NUM_INT 
 %token <numDouble> NUM_REAL
 
+%type <numDouble> expressao exPrioM exPrioMM exPrioMMM valorUnario
+%type <numDouble> exprCalcula
 %type <numDouble> valor valorExpr 
-%type <numDouble> expressao exprCalcula 
 %type <numDouble> funcao
 
 %start inicial
 %%
 
-inicial     : config NOVA_LINHA         { cout << "config\n"; return SUCESSO; }
-            | simbolos NOVA_LINHA       { cout << "simbolos\n"; return SUCESSO; }
-            | calcula NOVA_LINHA        { cout << "calcula\n"; return SUCESSO; }
+inicial     : configSemRtn NOVA_LINHA   { /*cout << "config sem retorno\n";*/ return SUCESSO; }
+            | config NOVA_LINHA         { /*cout << "config\n";*/ return separarComandos(); }
+            | simbolos NOVA_LINHA       { /*cout << "simbolos\n";*/ return separarComandos(); }
+            | calcula NOVA_LINHA        { /*cout << "calcula\n";*/ return separarComandos(); }
             | NOVA_LINHA                { return SUCESSO; }
             | QUIT                      { return FIM; }
+            | error                     { return emitirErroSintatico(TOKEN_INESPERADO); }
             ;
 
 config      : ABOUT PNT_VIRG                        { dcmat->showAbout(); }
             | SHOW SETTINGS PNT_VIRG                { dcmat->showSettings(); }
-            | RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
+            ;
+
+configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
             | SET AXIS ON PNT_VIRG                  { dcmat->setDrawAxis(true); }
             | SET AXIS OFF PNT_VIRG                 { dcmat->setDrawAxis(false); }
             | SET ERASE PLOT ON PNT_VIRG            { dcmat->setErasePlot(true); }
@@ -106,32 +112,6 @@ funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
             | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = std::abs($3); }
             ;
 
-// Colocar em ordem de prioridade
-expressao   : expressao MAIS expressao              { $$ = $1 + $3; }
-            | expressao MENOS expressao             { $$ = $1 - $3; }
-            | expressao MULTIPLICACAO expressao     { $$ = $1 * $3; }
-            | expressao POTENCIA expressao          { $$ = std::pow($1, $3); }
-            | expressao RESTO expressao             { $$ = std::fmod($1, $3); }
-            | PRT_ESQ expressao PRT_DIR             { $$ = $2; }   
-            | valorExpr                             { $$ = $1; }
-            | expressao DIVISAO expressao           
-            { 
-                if ($3 == 0){
-                    dcmat->showError(Erro::DividedByZero);
-                    return 1;
-                }else{
-                    $$ = $1 / $3;
-                }
-            }
-            ;
-
-valorExpr   : NUM_INT       { $$ = $1; }
-            | NUM_REAL      { $$ = $1; }
-            | CONSTANTE_E   { $$ = NUM_EULER; }
-            | CONSTANTE_PI  { $$ = PI; }
-            | IDENTIFIER    { $$ = dcmat->getSymbol($1); free($1); }
-            ;
-
 calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | SUM PRT_ESQ VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG
             | MATRIX IGUAL matriz PNT_VIRG
@@ -141,16 +121,64 @@ calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | PLOT PNT_VIRG
             | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
             | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG
-            | exprCalcula                                   { dcmat->showValue($1); }
+            | expressao                                   { dcmat->showValue($1); }
             ;
 
+// Arrumar
 exprCalcula : expressao         { $$ = $1; }
             | VARIAVEL_X        { dcmat->showError(Erro::VariableX); }
             ;
 
+// Em ordem de precedência (da menor prioridade para a maior)
+expressao   : PRT_ESQ expressao PRT_DIR         { $$ = $2; }
+            | exPrioM                           { $$ = $1; }
+            ;
+        
+exPrioM     : exPrioM MAIS exPrioMM             { $$ = $1 + $3; }
+            | exPrioM MENOS exPrioMM            { $$ = $1 - $3; }
+            | exPrioMM                          { $$ = $1; }
+            ;                               
+
+exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = $1 * $3; }
+            | exPrioMM RESTO exPrioMMM          { $$ = std::fmod($1, $3); }
+            | exPrioMM DIVISAO exPrioMMM           
+            { 
+                if ($3 == 0){
+                    dcmat->showError(Erro::DividedByZero);
+                    return separarComandos();
+                }else{
+                    $$ = $1 / $3;
+                }
+            }
+            | exPrioMMM                         { $$ = $1; }
+            ;
+
+exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = std::pow($1, $3); }
+            | valorUnario                       { $$ = $1; }
+            ;
+
+valorUnario : valorExpr         { $$ = $1; }
+            | MAIS valorExpr    { $$ = $2; }
+            | MENOS valorExpr   { $$ = -$2; }
+            ;
+
+valorExpr   : NUM_INT       { $$ = $1; }
+            | NUM_REAL      { $$ = $1; }
+            | CONSTANTE_E   { $$ = NUM_EULER; }
+            | CONSTANTE_PI  { $$ = PI; }
+            | IDENTIFIER    { $$ = dcmat->getSymbol($1); free($1); }
+            | funcao        { $$ = $1; }
+            ;
+
 %%
 
-void emitirErroSintatico(int erro)
+int separarComandos()
+{
+    cout << "\n\n";
+    return SUCESSO;
+}
+
+int emitirErroSintatico(int erro)
 {
     cout << "SYNTAX ERROR: ";
 
@@ -167,11 +195,13 @@ void emitirErroSintatico(int erro)
         default:
             break;
     } 
+
+    return SUCESSO;
 }
 
 int yyerror(const void *string)
 {
     emitirErroSintatico(TOKEN_FALTANTE);
     cout << "erro sintatico" << endl;
-    return SUCESSO;
+    return FIM;
 }
