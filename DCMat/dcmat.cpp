@@ -3,20 +3,27 @@
 #include "dcmat.h"
 
 using std::cout;
-using std::endl;
 using std::fixed;
 
 // Construtor
 DCMat::DCMat()
 {
     resetSettings();
-    matrix.resize(maxMatrix, vector<double>(maxMatrix));
+
+    matrix = nullptr;
+    matrixTemp = createMatrix();
+
     flagErro = false;
 }
 
 // Desconstrutor
 DCMat::~DCMat()
 {
+    delete matrixTemp;
+
+    if(matrix != nullptr){
+        delete matrix;
+    }
 }
 
 void DCMat::setHView(double low, double high)
@@ -103,12 +110,12 @@ void DCMat::showError(Erro error)
 
 void DCMat::showAbout()
 {
-    cout << "\n+----------------------------------------------+" << endl;
-    cout << "|                                              |" << endl;
-    cout << "|              DCMAT - V. 2024.01              |" << endl;
-    cout << "|         202200560356 - Isadora Vanço         |" << endl;
-    cout << "|                                              |" << endl;
-    cout << "+----------------------------------------------+";
+    cout << "\n+----------------------------------------------+";
+    cout << "\n|                                              |";
+    cout << "\n|              DCMAT - V. 2024.01              |";
+    cout << "\n|         202200560356 - Isadora Vanço         |";
+    cout << "\n|                                              |";
+    cout << "\n+----------------------------------------------+";
 }
 
 void DCMat::showSettings()
@@ -151,30 +158,82 @@ void DCMat::showValue(double value)
 }   
 
 /******************************************************
-*       VARIÁVEIS E DECLARAÇÕES
+*       MATRIZ
 *******************************************************/
 
 void DCMat::showMatrix()
 {
-    if(matrix.empty()){
+    if(matrix == nullptr){
         cout << "\nNo matrix defined!";
     }else{
-
+        for (auto& linha : matrix->matriz) {
+            cout << "\n";
+            for (double valor : linha) {
+                cout << fixed << std::setprecision(float_precision) << valor << " ";
+            }
+        }
     }
 }
 
-void DCMat::showSymbol(string name)
+Matriz* DCMat::createMatrix()
 {
-    if(symbols.find(name) != symbols.end()){
-        if(symbols[name].tipo == Tipo::MATRIX){
-            showMatrix();
-        }else{
-            cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor;
-        }      
-    }else{
-        cout << "\nUndefined symbol";
-    }
+    Matriz *matriz = new Matriz();
+    matriz->i = 0;
+    matriz->j = 0;
+
+    return matriz;
 }
+
+void DCMat::growMatrix(Matriz *matriz, double size)
+{
+    // Aumenta o número de linhas
+    matriz->matriz.resize(size, vector<double>(size, 0));
+    
+    // Aumenta o número de colunas
+    for (auto& linha : matrixTemp->matriz) {
+        linha.resize(size, 0);
+    }
+
+    // cout << "Tamanho: " << size << std::endl;
+}
+
+void DCMat::addColumnMatrix(double number)
+{
+    matrixTemp->j++;
+    // cout << "col[" << matrixTemp->i << "][" << matrixTemp->j - 1 << "]:" << number << std::endl;
+
+    if(matrixTemp->j > matrixTemp->matriz.size()){
+        growMatrix(matrixTemp, matrixTemp->j);  
+    }
+
+    matrixTemp->matriz[matrixTemp->i][matrixTemp->j - 1] = number;
+}
+
+void DCMat::addRowMatrix()
+{
+    matrixTemp->i++;
+    matrixTemp->j = 0;
+
+    if(matrixTemp->i > matrixTemp->matriz.size()){
+        growMatrix(matrixTemp, matrixTemp->i);
+    }
+    // cout << "lin:" << matrixTemp->i << std::endl;
+}
+
+void DCMat::addMatrix()
+{
+    if(matrix != nullptr){
+        delete matrix;
+    }
+    matrix = matrixTemp;
+
+    matrixTemp = createMatrix();
+    // cout << "Matrix adicionada\n";
+}
+
+/******************************************************
+*       VARIÁVEIS E DECLARAÇÕES
+*******************************************************/
 
 void DCMat::showAllSymbols()
 {
@@ -195,6 +254,19 @@ void DCMat::showAllSymbols()
     }
 }
 
+void DCMat::showSymbol(string name)
+{
+    if(symbols.find(name) != symbols.end()){
+        if(symbols[name].tipo == Tipo::MATRIX){
+            showMatrix();
+        }else{
+            cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor;
+        }      
+    }else{
+        cout << "\nUndefined symbol";
+    }
+}
+
 double DCMat::getSymbol(string name)
 {
     if(symbols.find(name) != symbols.end()){
@@ -209,7 +281,7 @@ double DCMat::getSymbol(string name)
 void DCMat::addSymbol(string name, Tipo type, double value)
 {
     if(!flagErro){
-        symbols[name] = {type, value, NULL};
+        symbols[name] = {type, value, nullptr};
         showValue(value);
     }
     flagErro = false;

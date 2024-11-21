@@ -3,11 +3,9 @@
 
 #include "types.h"
 #include <string>
-#include <vector>
 #include <unordered_map>
 
 using std::string;
-using std::vector;
 using std::unordered_map;
 
 #define PI 3.14159265
@@ -34,7 +32,8 @@ private:
     bool connect_dots;
 
     // Variáveis e definições
-    vector<vector<double>> matrix;
+    Matriz *matrix;
+    Matriz *matrixTemp;
     unordered_map<string, Variavel> symbols;
 
 public:
@@ -130,7 +129,7 @@ public:
    void showValue(double value);
 
     /******************************************************
-    *       SÍMBOLOS E DECLARAÇÕES
+    *       MATRIZ
     *******************************************************/
 
     /**
@@ -139,15 +138,48 @@ public:
     void showMatrix();
 
     /**
-    * @brief Mostra o valor de um símbolo definido
-    * @param name Nome do símbolo 
-    */
-    void showSymbol(string name);
+     * @brief Cria uma nova matrizs
+     * @return O endereço da nova matriz
+     */
+    Matriz* createMatrix();
+
+    /**
+     * @brief Aumenta o tamanho da matriz quadrada
+     * @param matrix O endereço da matriz
+     * @param size O novo tamanho da matriz
+     */
+    void growMatrix(Matriz *matrix, double size);
+
+    /**
+     * @brief Adiciona uma coluna na matriz
+     * @param number O número da nova coluna
+     */
+    void addColumnMatrix(double number);
+
+    /**
+     * @brief Adiciona uma linha na matriz
+     */
+    void addRowMatrix();
+
+    /**
+     * @brief Adiciona a matriz temporária na variável de matriz
+     */
+    void addMatrix();
+
+    /******************************************************
+    *       SÍMBOLOS E DECLARAÇÕES
+    *******************************************************/
 
     /**
     * @brief Mostra todos os símbolos definidos
     */
     void showAllSymbols();
+
+    /**
+    * @brief Mostra o valor de um símbolo definido
+    * @param name Nome do símbolo 
+    */
+    void showSymbol(string name);
 
     /**
      * @brief Retorna o valor de um simbolo, caso exista

@@ -36,7 +36,7 @@ int emitirErroSintatico(int erro);
 
 %token INTEGRATE SUM MATRIX SOLVE DETERMINANT LINEAR_SYS SYMBOLS
 
-%token PNT_VIRG DOIS_PONTOS VIRGULA PRT_ESQ PRT_DIR COLCHETE_ESQ COLCHETE_DIR
+%token PNT_VIRG DOIS_PONTOS VIRGULA PRT_ESQ PRT_DIR CLCT_ESQ CLCT_DIR
 %token ATRIBUICAO IGUAL
 
 %token NOVA_LINHA ERRO
@@ -61,7 +61,7 @@ inicial     : configSemRtn NOVA_LINHA   { /*cout << "config sem retorno\n";*/ re
             | simbolos NOVA_LINHA       { /*cout << "simbolos\n";*/ return separarComandos(); }
             | calcula NOVA_LINHA        { /*cout << "calcula\n";*/ return separarComandos(); }
             | NOVA_LINHA                { return SUCESSO; }
-            | QUIT                      { return FIM; }
+            | QUIT NOVA_LINHA           { return FIM; }
             | error                     { return emitirErroSintatico(TOKEN_INESPERADO); }
             ;
 
@@ -80,6 +80,7 @@ configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
             | SET INTEGRAL_STEPS NUM_INT PNT_VIRG   { dcmat->setIntegralSteps($3); }
             | SET H_VIEW limites PNT_VIRG           { dcmat->setHView(limites->low, limites->high); }
             | SET V_VIEW limites PNT_VIRG           { dcmat->setVView(limites->low, limites->high); }
+            | MATRIX IGUAL matriz PNT_VIRG          { dcmat->addMatrix(); }
             ;
 
 limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
@@ -95,15 +96,22 @@ simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($
             | SHOW SYMBOLS PNT_VIRG                         { dcmat->showAllSymbols(); }
             ;
 
-matriz      : COLCHETE_ESQ COLCHETE_ESQ valor nValor COLCHETE_DIR nValores COLCHETE_DIR
+// Matriz com apenas um elemento
+matriz      : CLCT_ESQ linhas CLCT_DIR
             ;
 
-nValor      : VIRGULA valor nValor  
-            | // Vazio
+// Adiciona uma linha
+linhas      : linha                         { dcmat->addRowMatrix(); }
+            | linhas VIRGULA linha          { dcmat->addRowMatrix(); }
             ;
 
-nValores    : VIRGULA COLCHETE_ESQ valor nValor COLCHETE_DIR nValores
-            | // Vazio
+// Valores de uma linha
+linha       : CLCT_ESQ valores CLCT_DIR
+            ;
+
+// Adiciona uma coluna
+valores     : valor                         { dcmat->addColumnMatrix($1); }
+            | valores VIRGULA valor         { dcmat->addColumnMatrix($3); }
             ;
 
 funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
@@ -114,10 +122,9 @@ funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
 
 calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | SUM PRT_ESQ VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG
-            | MATRIX IGUAL matriz PNT_VIRG
             | SOLVE DETERMINANT PNT_VIRG
             | SOLVE LINEAR_SYS PNT_VIRG   
-            | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
+            | IDENTIFIER PNT_VIRG                         { dcmat->showSymbol($1); free($1); } 
             | PLOT PNT_VIRG
             | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
             | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG

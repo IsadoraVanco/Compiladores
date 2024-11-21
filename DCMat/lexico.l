@@ -74,8 +74,8 @@ abs             return ABSOLUTO;
 ":"             return DOIS_PONTOS;
 "="             return IGUAL;
 ":="            return ATRIBUICAO;
-"["             return COLCHETE_ESQ;
-"]"             return COLCHETE_DIR;
+"["             return CLCT_ESQ;
+"]"             return CLCT_DIR;
 ";"             return PNT_VIRG;
 ","             return VIRGULA;
 
