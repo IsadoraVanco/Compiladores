@@ -24,6 +24,13 @@ DCMat::~DCMat()
     if(matrix != nullptr){
         delete matrix;
     }
+
+    // Todos as matrizes da lista de simbolos
+    for(auto& simbolo : symbols){
+        if(simbolo.second.matriz != nullptr){
+            delete simbolo.second.matriz;
+        }
+    }
 }
 
 void DCMat::setHView(double low, double high)
@@ -161,12 +168,16 @@ void DCMat::showValue(double value)
 *       MATRIZ
 *******************************************************/
 
-void DCMat::showMatrix()
+void DCMat::showMatrix(Matriz *matriz)
 {
-    if(matrix == nullptr){
+    if(matriz == nullptr){
+        matriz = matrix;
+    }
+    
+    if(matriz == nullptr){
         cout << "\nNo matrix defined!";
     }else{
-        for (auto& linha : matrix->matriz) {
+        for (auto& linha : matriz->matriz) {
             cout << "\n";
             for (double valor : linha) {
                 cout << fixed << std::setprecision(float_precision) << valor << " ";
@@ -180,12 +191,16 @@ Matriz* DCMat::createMatrix()
     Matriz *matriz = new Matriz();
     matriz->i = 0;
     matriz->j = 0;
+    matriz->tamanho = 0;
 
     return matriz;
 }
 
-void DCMat::growMatrix(Matriz *matriz, double size)
+void DCMat::growMatrix(Matriz *matriz)
 {
+    matriz->tamanho++;
+    int size = matriz->tamanho;
+
     // Aumenta o número de linhas
     matriz->matriz.resize(size, vector<double>(size, 0));
     
@@ -194,18 +209,27 @@ void DCMat::growMatrix(Matriz *matriz, double size)
         linha.resize(size, 0);
     }
 
-    // cout << "Tamanho: " << size << std::endl;
+    // cout << "Novo tamanho: " << size << std::endl;
 }
 
 void DCMat::addColumnMatrix(double number)
 {
     matrixTemp->j++;
-    // cout << "col[" << matrixTemp->i << "][" << matrixTemp->j - 1 << "]:" << number << std::endl;
-
-    if(matrixTemp->j > matrixTemp->matriz.size()){
-        growMatrix(matrixTemp, matrixTemp->j);  
+    // cout << "\ncol[" << matrixTemp->i << "][" << matrixTemp->j << "]" << std::endl;
+    
+    // cout << "Tamanho: " << matrixTemp->matriz.size() << std::endl;
+    
+    if(matrixTemp->j > matrixTemp->i){
+        if(matrixTemp->j > matrixTemp->matriz.size()){
+            growMatrix(matrixTemp);  
+        }
+    }else{
+        if(matrixTemp->i + 1 > matrixTemp->matriz.size()){
+            growMatrix(matrixTemp);  
+        }
     }
 
+    // cout << "[" << matrixTemp->i << "][" << matrixTemp->j - 1 << "]: " << number << std::endl;
     matrixTemp->matriz[matrixTemp->i][matrixTemp->j - 1] = number;
 }
 
@@ -213,11 +237,12 @@ void DCMat::addRowMatrix()
 {
     matrixTemp->i++;
     matrixTemp->j = 0;
+    // cout << "\nlin[" << matrixTemp->i << "][" << matrixTemp->j << "]" << std::endl;
 
+    // cout << "Tamanho: " << matrixTemp->matriz.size() << std::endl;
     if(matrixTemp->i > matrixTemp->matriz.size()){
-        growMatrix(matrixTemp, matrixTemp->i);
+        growMatrix(matrixTemp);
     }
-    // cout << "lin:" << matrixTemp->i << std::endl;
 }
 
 void DCMat::addMatrix()
@@ -256,9 +281,9 @@ void DCMat::showAllSymbols()
 
 void DCMat::showSymbol(string name)
 {
-    if(symbols.find(name) != symbols.end()){
+    if(symbolExists(name)){
         if(symbols[name].tipo == Tipo::MATRIX){
-            showMatrix();
+            showMatrix(symbols[name].matriz);
         }else{
             cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor;
         }      
@@ -269,7 +294,7 @@ void DCMat::showSymbol(string name)
 
 double DCMat::getSymbol(string name)
 {
-    if(symbols.find(name) != symbols.end()){
+    if(symbolExists(name)){
         return symbols[name].valor;
     }else{
         cout << "\nUndefined symbol [" << name << "]";
@@ -281,8 +306,32 @@ double DCMat::getSymbol(string name)
 void DCMat::addSymbol(string name, Tipo type, double value)
 {
     if(!flagErro){
-        symbols[name] = {type, value, nullptr};
-        showValue(value);
+        if(symbolExists(name))
+        {
+            if(symbols[name].matriz != nullptr){
+                delete symbols[name].matriz;
+            }
+        }
+
+        if(type == Tipo::FLOAT){
+            symbols[name] = {type, value, nullptr};
+
+            showValue(value);
+        }
+        else if(type == Tipo::MATRIX){
+            Matriz *novaMatriz = matrixTemp;
+            double tamanho = novaMatriz->tamanho;
+            matrixTemp = createMatrix();
+
+            symbols[name] = {type, tamanho, novaMatriz};
+
+            showMatrix(symbols[name].matriz);
+        }
     }
     flagErro = false;
+}
+
+bool DCMat::symbolExists(string name)
+{
+    return symbols.find(name) != symbols.end();
 }

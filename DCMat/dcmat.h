@@ -16,9 +16,6 @@ enum class Erro {DividedByZero, VariableX};
 class DCMat
 {
 private:
-    // Constantes
-    int maxMatrix = 10;
-
     // Flags
     bool flagErro;
 
@@ -134,8 +131,9 @@ public:
 
     /**
     * @brief Mostra a matriz definida
+    * @param Matriz O endereço da matriz a ser mostrada
     */
-    void showMatrix();
+    void showMatrix(Matriz *matriz);
 
     /**
      * @brief Cria uma nova matrizs
@@ -144,11 +142,11 @@ public:
     Matriz* createMatrix();
 
     /**
-     * @brief Aumenta o tamanho da matriz quadrada
+     * @brief Aumenta o tamanho da matriz quadrada 
+     *  em uma unidade
      * @param matrix O endereço da matriz
-     * @param size O novo tamanho da matriz
      */
-    void growMatrix(Matriz *matrix, double size);
+    void growMatrix(Matriz *matrix);
 
     /**
      * @brief Adiciona uma coluna na matriz
@@ -195,6 +193,13 @@ public:
      * @param value O valor do símbolo
      */
     void addSymbol(string name, Tipo type, double value);
+
+    /**
+     * @brief Verifica se um símbolo já existe na lista
+     * @param name O nome do símbolo
+     * @return Se o símbolo existe ou não
+     */
+    bool symbolExists(string name);
 };
 
 extern DCMat *dcmat;

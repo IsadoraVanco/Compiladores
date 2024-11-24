@@ -90,28 +90,28 @@ valor       : NUM_INT       { $$ = $1; }
             | NUM_REAL      { $$ = $1; }
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($1, Tipo::FLOAT, $3); }
-            | IDENTIFIER ATRIBUICAO matriz
-            | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(); }
-            | SHOW SYMBOLS PNT_VIRG                         { dcmat->showAllSymbols(); }
-            ;
-
 // Matriz com apenas um elemento
 matriz      : CLCT_ESQ linhas CLCT_DIR
             ;
 
 // Adiciona uma linha
-linhas      : linha                         { dcmat->addRowMatrix(); }
-            | linhas VIRGULA linha          { dcmat->addRowMatrix(); }
+linhas      : linha                        
+            | linhas VIRGULA linha          
             ;
 
 // Valores de uma linha
-linha       : CLCT_ESQ valores CLCT_DIR
+linha       : CLCT_ESQ valores CLCT_DIR     { dcmat->addRowMatrix(); }
             ;
 
 // Adiciona uma coluna
 valores     : valor                         { dcmat->addColumnMatrix($1); }
             | valores VIRGULA valor         { dcmat->addColumnMatrix($3); }
+            ;
+
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($1, Tipo::FLOAT, $3); free($1); }
+            | IDENTIFIER ATRIBUICAO matriz PNT_VIRG         { dcmat->addSymbol($1, Tipo::MATRIX, 0); free($1); }
+            | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
+            | SHOW SYMBOLS PNT_VIRG                         { dcmat->showAllSymbols(); }
             ;
 
 funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
@@ -201,7 +201,7 @@ int emitirErroSintatico(int erro)
 
         default:
             break;
-    } 
+    }
 
     return SUCESSO;
 }

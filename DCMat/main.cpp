@@ -5,6 +5,7 @@
 using std::cout;
 
 extern int yyparse();
+extern int yylex_destroy();
 
 // Variáveis globais
 // Funções do dcmat
@@ -25,6 +26,7 @@ int main() {
 
     delete dcmat;
     delete limites;
+    yylex_destroy();
 
     return 0;
 }
