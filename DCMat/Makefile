@@ -56,3 +56,7 @@ clean:
 run: $(PROJETO)
 	clear
 	./$(PROJETO)
+
+valgrind: $(PROJETO)
+	clear
+	valgrind --leak-check=full --show-leak-kinds=all ./$(PROJETO)
