@@ -33,6 +33,51 @@ private:
     Matriz *matrixTemp;
     unordered_map<string, Variavel> symbols;
 
+    // Funções privadas
+    /******************************************************
+    *       CONFIGURAÇÕES
+    *******************************************************/
+
+   /**
+    * @brief Mostra uma mensagem de erro
+    */
+    void showErrorMessage(string message);
+
+    /******************************************************
+    *       MATRIZ
+    *******************************************************/
+    
+    /**
+     * @brief Conta a quantidade de dígitos de um número
+     * @param number O número a ser analisado
+     * @return A quantidade total de dígitos 
+     */
+    int countDigits(int number);
+    
+    /**
+     * @brief Cria uma nova matrizs
+     * @return O endereço da nova matriz
+     */
+    Matriz* createMatrix();
+
+    /**
+     * @brief Aumenta o tamanho da matriz quadrada 
+     *  em uma unidade
+     * @param matrix O endereço da matriz
+     */
+    void growMatrix(Matriz *matrix);
+    
+    /******************************************************
+    *       SÍMBOLOS E DECLARAÇÕES
+    *******************************************************/
+
+    /**
+     * @brief Verifica se um símbolo já existe na lista
+     * @param name O nome do símbolo
+     * @return Se o símbolo existe ou não
+     */
+    bool symbolExists(string name);
+
 public:
     // Construtor
     DCMat();
@@ -90,11 +135,6 @@ public:
     *       CONFIGURAÇÕES
     *******************************************************/
 
-   /**
-    * @brief Mostra uma mensagem de erro
-    */
-    void showErrorMessage(string message);
-
     /**
      * @brief Mostra um erro
      * @param error O tipo do erro
@@ -134,19 +174,6 @@ public:
     * @param Matriz O endereço da matriz a ser mostrada
     */
     void showMatrix(Matriz *matriz);
-
-    /**
-     * @brief Cria uma nova matrizs
-     * @return O endereço da nova matriz
-     */
-    Matriz* createMatrix();
-
-    /**
-     * @brief Aumenta o tamanho da matriz quadrada 
-     *  em uma unidade
-     * @param matrix O endereço da matriz
-     */
-    void growMatrix(Matriz *matrix);
 
     /**
      * @brief Adiciona uma coluna na matriz
@@ -193,13 +220,6 @@ public:
      * @param value O valor do símbolo
      */
     void addSymbol(string name, Tipo type, double value);
-
-    /**
-     * @brief Verifica se um símbolo já existe na lista
-     * @param name O nome do símbolo
-     * @return Se o símbolo existe ou não
-     */
-    bool symbolExists(string name);
 };
 
 extern DCMat *dcmat;

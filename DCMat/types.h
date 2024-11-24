@@ -18,7 +18,7 @@ typedef struct {
     int i;  // Quantidade de linhas adicionadas
     int j;  // Quantidade de colunas adicionadas
     int tamanho;    // O tamanho da matriz
-    vector<vector<double>> matriz;
+    vector<vector<double>> matriz;  // A matriz dinâmica
 }Matriz;
 
 typedef struct {

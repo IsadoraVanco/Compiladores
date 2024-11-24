@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 #include "dcmat.h"
 
 using std::cout;
@@ -168,6 +169,24 @@ void DCMat::showValue(double value)
 *       MATRIZ
 *******************************************************/
 
+int DCMat::countDigits(int number)
+{
+    if(number == 0){
+        return 1; 
+    }
+
+    int total = 0;
+
+    if (number < 0) {
+        total++;
+        number = -number;
+    }
+
+    total += static_cast<int>(std::log10(number)) + 1;
+
+    return total;
+}
+
 void DCMat::showMatrix(Matriz *matriz)
 {
     if(matriz == nullptr){
@@ -177,12 +196,74 @@ void DCMat::showMatrix(Matriz *matriz)
     if(matriz == nullptr){
         cout << "\nNo matrix defined!";
     }else{
-        for (auto& linha : matriz->matriz) {
-            cout << "\n";
-            for (double valor : linha) {
-                cout << fixed << std::setprecision(float_precision) << valor << " ";
+        int numElementos = matriz->tamanho;
+        int digitos[numElementos + 1][numElementos];
+        int somaLinha = 0;
+        int digito;
+
+        // Primeira linha 
+        for(int j = 0; j < numElementos; j++){
+            digito = countDigits(matriz->matriz[0][j]);
+            
+            digitos[0][j] = digito;
+            // Maiores digitos
+            digitos[numElementos][j] = digito;
+        }
+
+        // Pega todas as quantidades da parte inteira dos números 
+        for(int i = 1; i < numElementos; i++){
+            for(int j = 0; j < numElementos; j++){
+                digitos[i][j] = countDigits(matriz->matriz[i][j]);
+
+                if(digitos[i][j] > digitos[numElementos][j]){
+                    digitos[numElementos][j] = digito;
+                }
             }
         }
+
+        // Quantidade de espaços entre os números
+        somaLinha += numElementos - 1;
+
+        // Quantidade de casas decimais e pontos
+        if(float_precision > 0){
+            somaLinha += numElementos * (float_precision + 1);
+        }
+
+        // Maiores dígitos
+        for(int j = 0; j < numElementos; j++){
+            somaLinha += digitos[numElementos][j];
+        }
+
+        // Borda superior
+        cout << "\n+-";
+        for(int i = 0; i < somaLinha; i++){
+            cout << " ";
+        }
+        cout << "-+";
+
+        // Meios
+        for(int i = 0; i < numElementos; i++){
+            cout << "\n|";
+            for(int j = 0; j < numElementos; j++){
+                cout << " ";
+
+                int x = digitos[numElementos][j] - digitos[i][j];
+                // cout << " (" << x << ") ";
+                for(x; x > 0; x--){
+                    cout << " ";
+                }
+
+                cout << fixed << std::setprecision(float_precision) << matriz->matriz[i][j];
+            }
+            cout << " |";
+        }
+
+        // Borda inferior
+        cout << "\n+-";
+        for(int i = 0; i < somaLinha; i++){
+            cout << " ";
+        }
+        cout << "-+";
     }
 }
 

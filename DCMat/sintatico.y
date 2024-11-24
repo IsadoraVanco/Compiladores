@@ -86,8 +86,12 @@ configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
 limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
             ;
 
-valor       : NUM_INT       { $$ = $1; }
-            | NUM_REAL      { $$ = $1; }
+valor       : NUM_INT           { $$ = $1; }
+            | MAIS NUM_INT      { $$ = $2; }
+            | MENOS NUM_INT     { $$ = -$2; }
+            | NUM_REAL          { $$ = $1; }
+            | MAIS NUM_REAL     { $$ = $2; }
+            | MENOS NUM_REAL    { $$ = -$2; }
             ;
 
 // Matriz com apenas um elemento
