@@ -110,6 +110,10 @@ void DCMat::showError(Erro error)
         cout << "\nThe x variable cannot be present on expressions.";
         flagErro = true;
         break;
+
+    case Erro::NoMatrix:
+        cout << "\nNo matrix defined!";
+        break;
     
     default:
         break;
@@ -194,7 +198,7 @@ void DCMat::showMatrix(Matriz *matriz)
     }
     
     if(matriz == nullptr){
-        cout << "\nNo matrix defined!";
+        showError(Erro::NoMatrix);
     }else{
         int numElementos = matriz->tamanho;
         int digitos[numElementos + 1][numElementos];
@@ -277,24 +281,36 @@ Matriz* DCMat::createMatrix()
     return matriz;
 }
 
-void DCMat::growMatrix(Matriz *matriz)
+void DCMat::growMatrix()
 {
-    matriz->tamanho++;
-    int size = matriz->tamanho;
+    if(matrixTemp->tamanho >= maxMatrix){
+        showErrorMessage("Matrix limits out of boundaries.");
+        
+        delete matrixTemp;
+        matrixTemp = createMatrix();
+        flagErro = true;
+    }else{
+        matrixTemp->tamanho++;
+        int size = matrixTemp->tamanho;
 
-    // Aumenta o número de linhas
-    matriz->matriz.resize(size, vector<double>(size, 0));
-    
-    // Aumenta o número de colunas
-    for (auto& linha : matrixTemp->matriz) {
-        linha.resize(size, 0);
+        // Aumenta o número de linhas
+        matrixTemp->matriz.resize(size, vector<double>(size, 0));
+        
+        // Aumenta o número de colunas
+        for (auto& linha : matrixTemp->matriz) {
+            linha.resize(size, 0);
+        }
+
+        // cout << "Novo tamanho: " << size << std::endl;
     }
-
-    // cout << "Novo tamanho: " << size << std::endl;
 }
 
 void DCMat::addColumnMatrix(double number)
 {
+    if(flagErro){
+        return;
+    }
+
     matrixTemp->j++;
     // cout << "\ncol[" << matrixTemp->i << "][" << matrixTemp->j << "]" << std::endl;
     
@@ -302,32 +318,43 @@ void DCMat::addColumnMatrix(double number)
     
     if(matrixTemp->j > matrixTemp->i){
         if(matrixTemp->j > matrixTemp->matriz.size()){
-            growMatrix(matrixTemp);  
+            growMatrix();  
         }
     }else{
         if(matrixTemp->i + 1 > matrixTemp->matriz.size()){
-            growMatrix(matrixTemp);  
+            growMatrix();  
         }
     }
 
-    // cout << "[" << matrixTemp->i << "][" << matrixTemp->j - 1 << "]: " << number << std::endl;
-    matrixTemp->matriz[matrixTemp->i][matrixTemp->j - 1] = number;
+    if(!flagErro){
+        // cout << "[" << matrixTemp->i << "][" << matrixTemp->j - 1 << "]: " << number << std::endl;
+        matrixTemp->matriz[matrixTemp->i][matrixTemp->j - 1] = number;
+    }
 }
 
 void DCMat::addRowMatrix()
 {
+    if(flagErro){
+        return;
+    }
+
     matrixTemp->i++;
     matrixTemp->j = 0;
     // cout << "\nlin[" << matrixTemp->i << "][" << matrixTemp->j << "]" << std::endl;
 
     // cout << "Tamanho: " << matrixTemp->matriz.size() << std::endl;
     if(matrixTemp->i > matrixTemp->matriz.size()){
-        growMatrix(matrixTemp);
+        growMatrix();
     }
 }
 
 void DCMat::addMatrix()
 {
+    if(flagErro){
+        flagErro = false;
+        return;
+    }
+
     if(matrix != nullptr){
         delete matrix;
     }
@@ -357,6 +384,11 @@ void DCMat::showAllSymbols()
                 cout << "[" << fixed << std::setprecision(0) << simbolo.second.valor << "]";
             }
         }
+    }
+
+    if(symbols.size() > 0)
+    {
+        cout << "\n\n";
     }
 }
 
@@ -407,6 +439,7 @@ void DCMat::addSymbol(string name, Tipo type, double value)
             symbols[name] = {type, tamanho, novaMatriz};
 
             showMatrix(symbols[name].matriz);
+            cout << "\n\n";
         }
     }
     flagErro = false;

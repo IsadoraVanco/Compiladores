@@ -45,9 +45,10 @@ int emitirErroSintatico(int erro);
 %token MAIS MENOS MULTIPLICACAO DIVISAO POTENCIA RESTO 
 
 %token <text> IDENTIFIER CONSTANTE_E CONSTANTE_PI VARIAVEL_X
-%token <numInt> NUM_INT 
+%token <numInt> NUM_INT
 %token <numDouble> NUM_REAL
 
+%type <numInt> inteiro
 %type <numDouble> expressao exPrioM exPrioMM exPrioMMM valorUnario
 %type <numDouble> exprCalcula
 %type <numDouble> valor valorExpr 
@@ -58,6 +59,7 @@ int emitirErroSintatico(int erro);
 
 inicial     : configSemRtn NOVA_LINHA   { /*cout << "config sem retorno\n";*/ return SUCESSO; }
             | config NOVA_LINHA         { /*cout << "config\n";*/ return separarComandos(); }
+            | simbSemRtn NOVA_LINHA     { /*cout << "simbolos sem retorno\n";*/ return SUCESSO; }
             | simbolos NOVA_LINHA       { /*cout << "simbolos\n";*/ return separarComandos(); }
             | calcula NOVA_LINHA        { /*cout << "calcula\n";*/ return separarComandos(); }
             | NOVA_LINHA                { return SUCESSO; }
@@ -76,8 +78,8 @@ configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
             | SET ERASE PLOT OFF PNT_VIRG           { dcmat->setErasePlot(false); }
             | SET DOTS ON PNT_VIRG                  { dcmat->setConnectDots(true); }
             | SET DOTS OFF PNT_VIRG                 { dcmat->setConnectDots(false); }
-            | SET FLOAT PRECISION NUM_INT PNT_VIRG  { dcmat->setFloatPrecision($4); }
-            | SET INTEGRAL_STEPS NUM_INT PNT_VIRG   { dcmat->setIntegralSteps($3); }
+            | SET FLOAT PRECISION inteiro PNT_VIRG  { dcmat->setFloatPrecision($4); }
+            | SET INTEGRAL_STEPS inteiro PNT_VIRG   { dcmat->setIntegralSteps($3); }
             | SET H_VIEW limites PNT_VIRG           { dcmat->setHView(limites->low, limites->high); }
             | SET V_VIEW limites PNT_VIRG           { dcmat->setVView(limites->low, limites->high); }
             | MATRIX IGUAL matriz PNT_VIRG          { dcmat->addMatrix(); }
@@ -86,9 +88,12 @@ configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
 limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
             ;
 
-valor       : NUM_INT           { $$ = $1; }
+inteiro     : NUM_INT           { $$ = $1; }
             | MAIS NUM_INT      { $$ = $2; }
             | MENOS NUM_INT     { $$ = -$2; }
+            ;
+
+valor       : inteiro           { $$ = $1; }
             | NUM_REAL          { $$ = $1; }
             | MAIS NUM_REAL     { $$ = $2; }
             | MENOS NUM_REAL    { $$ = -$2; }
@@ -112,10 +117,12 @@ valores     : valor                         { dcmat->addColumnMatrix($1); }
             | valores VIRGULA valor         { dcmat->addColumnMatrix($3); }
             ;
 
+simbSemRtn  : IDENTIFIER ATRIBUICAO matriz PNT_VIRG     { dcmat->addSymbol($1, Tipo::MATRIX, 0); free($1); }
+            | SHOW SYMBOLS PNT_VIRG                     { dcmat->showAllSymbols(); }
+            ;
+
 simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($1, Tipo::FLOAT, $3); free($1); }
-            | IDENTIFIER ATRIBUICAO matriz PNT_VIRG         { dcmat->addSymbol($1, Tipo::MATRIX, 0); free($1); }
             | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
-            | SHOW SYMBOLS PNT_VIRG                         { dcmat->showAllSymbols(); }
             ;
 
 funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
@@ -173,8 +180,7 @@ valorUnario : valorExpr         { $$ = $1; }
             | MENOS valorExpr   { $$ = -$2; }
             ;
 
-valorExpr   : NUM_INT       { $$ = $1; }
-            | NUM_REAL      { $$ = $1; }
+valorExpr   : valor         { $$ = $1; }
             | CONSTANTE_E   { $$ = NUM_EULER; }
             | CONSTANTE_PI  { $$ = PI; }
             | IDENTIFIER    { $$ = dcmat->getSymbol($1); free($1); }

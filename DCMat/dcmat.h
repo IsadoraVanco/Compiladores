@@ -11,11 +11,14 @@ using std::unordered_map;
 #define PI 3.14159265
 #define NUM_EULER 2.71828182
 
-enum class Erro {DividedByZero, VariableX};
+enum class Erro {DividedByZero, VariableX, NoMatrix};
 
 class DCMat
 {
 private:
+    // Constantes
+    const int maxMatrix = 10;
+
     // Flags
     bool flagErro;
 
@@ -63,9 +66,8 @@ private:
     /**
      * @brief Aumenta o tamanho da matriz quadrada 
      *  em uma unidade
-     * @param matrix O endereço da matriz
      */
-    void growMatrix(Matriz *matrix);
+    void growMatrix();
     
     /******************************************************
     *       SÍMBOLOS E DECLARAÇÕES
