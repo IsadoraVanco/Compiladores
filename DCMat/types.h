@@ -15,15 +15,14 @@ typedef struct {
 }Limites;
 
 typedef struct {
-    int i;  // Quantidade de linhas adicionadas
-    int j;  // Quantidade de colunas adicionadas
-    int tamanho;    // O tamanho da matriz
+    int linhas;  // Quantidade de linhas adicionadas
+    int colunas;  // Quantidade de colunas adicionadas
     vector<vector<double>> matriz;  // A matriz dinâmica
 }Matriz;
 
 typedef struct {
     Tipo tipo;
-    double valor; // Ou tamanho da matriz
+    double valor;
     Matriz *matriz;
 }Variavel;
 

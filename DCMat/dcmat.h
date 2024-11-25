@@ -34,6 +34,8 @@ private:
     // Variáveis e definições
     Matriz *matrix;
     Matriz *matrixTemp;
+    int iMatrix;
+    int jMatrix;
     unordered_map<string, Variavel> symbols;
 
     // Funções privadas
@@ -62,6 +64,20 @@ private:
      * @return O endereço da nova matriz
      */
     Matriz* createMatrix();
+
+    /**
+     * @brief Redimensiona a quantidade de colunas da matriz
+     * @param matriz O endereço da matriz
+     * @param columns A quantidade de colunas
+     */
+    void resizeColumns(Matriz *matriz, int columns);
+
+    /**
+     * @brief Redimensiona a quantidade de linhas da matriz
+     * @param matriz O endereço da matriz
+     * @param rows A quantidade de linhas
+     */
+    void resizeRows(Matriz *matriz, int rows);
 
     /**
      * @brief Aumenta o tamanho da matriz quadrada 

@@ -200,42 +200,43 @@ void DCMat::showMatrix(Matriz *matriz)
     if(matriz == nullptr){
         showError(Erro::NoMatrix);
     }else{
-        int numElementos = matriz->tamanho;
-        int digitos[numElementos + 1][numElementos];
+        int numLinhas = matriz->linhas;
+        int numColunas = matriz->colunas;
+        int digitos[numLinhas + 1][numColunas];
         int somaLinha = 0;
         int digito;
 
         // Primeira linha 
-        for(int j = 0; j < numElementos; j++){
+        for(int j = 0; j < numColunas; j++){
             digito = countDigits(matriz->matriz[0][j]);
             
             digitos[0][j] = digito;
             // Maiores digitos
-            digitos[numElementos][j] = digito;
+            digitos[numLinhas][j] = digito;
         }
 
         // Pega todas as quantidades da parte inteira dos números 
-        for(int i = 1; i < numElementos; i++){
-            for(int j = 0; j < numElementos; j++){
+        for(int i = 1; i < numLinhas; i++){
+            for(int j = 0; j < numColunas; j++){
                 digitos[i][j] = countDigits(matriz->matriz[i][j]);
 
-                if(digitos[i][j] > digitos[numElementos][j]){
-                    digitos[numElementos][j] = digito;
+                if(digitos[i][j] > digitos[numLinhas][j]){
+                    digitos[numLinhas][j] = digito;
                 }
             }
         }
 
         // Quantidade de espaços entre os números
-        somaLinha += numElementos - 1;
+        somaLinha += numColunas - 1;
 
         // Quantidade de casas decimais e pontos
         if(float_precision > 0){
-            somaLinha += numElementos * (float_precision + 1);
+            somaLinha += numColunas * (float_precision + 1);
         }
 
         // Maiores dígitos
-        for(int j = 0; j < numElementos; j++){
-            somaLinha += digitos[numElementos][j];
+        for(int j = 0; j < numColunas; j++){
+            somaLinha += digitos[numLinhas][j];
         }
 
         // Borda superior
@@ -246,12 +247,12 @@ void DCMat::showMatrix(Matriz *matriz)
         cout << "-+";
 
         // Meios
-        for(int i = 0; i < numElementos; i++){
+        for(int i = 0; i < numLinhas; i++){
             cout << "\n|";
-            for(int j = 0; j < numElementos; j++){
+            for(int j = 0; j < numColunas; j++){
                 cout << " ";
 
-                int x = digitos[numElementos][j] - digitos[i][j];
+                int x = digitos[numLinhas][j] - digitos[i][j];
                 // cout << " (" << x << ") ";
                 for(x; x > 0; x--){
                     cout << " ";
@@ -274,34 +275,47 @@ void DCMat::showMatrix(Matriz *matriz)
 Matriz* DCMat::createMatrix()
 {
     Matriz *matriz = new Matriz();
-    matriz->i = 0;
-    matriz->j = 0;
-    matriz->tamanho = 0;
+    matriz->colunas = 0;
+    matriz->linhas = 0;
+    resizeRows(matriz, 1);
+
+    // Indices começam em 0
+    iMatrix = 0;
+    jMatrix = 0;
 
     return matriz;
 }
 
-void DCMat::growMatrix()
+void DCMat::resizeColumns(Matriz *matriz, int columns)
 {
-    if(matrixTemp->tamanho >= maxMatrix){
+    if(columns > maxMatrix){
         showErrorMessage("Matrix limits out of boundaries.");
         
         delete matrixTemp;
         matrixTemp = createMatrix();
         flagErro = true;
     }else{
-        matrixTemp->tamanho++;
-        int size = matrixTemp->tamanho;
-
-        // Aumenta o número de linhas
-        matrixTemp->matriz.resize(size, vector<double>(size, 0));
-        
-        // Aumenta o número de colunas
-        for (auto& linha : matrixTemp->matriz) {
-            linha.resize(size, 0);
+        for (auto& linha : matriz->matriz) {
+            linha.resize(columns, 0);
         }
 
-        // cout << "Novo tamanho: " << size << std::endl;
+        matriz->colunas = columns;
+        // cout << "Novo tamanho: " << matriz->linhas << "x" << matriz->colunas << std::endl;
+    }
+}
+
+void DCMat::resizeRows(Matriz *matriz, int rows)
+{
+    if(rows > maxMatrix){
+        showErrorMessage("Matrix limits out of boundaries.");
+        
+        delete matrixTemp;
+        matrixTemp = createMatrix();
+        flagErro = true;
+    }else{
+        matriz->matriz.resize(rows, vector<double>(matriz->colunas, 0));
+        matriz->linhas = rows;
+        // cout << "Novo tamanho: " << rows << "x" << matriz->colunas << std::endl;
     }
 }
 
@@ -311,24 +325,23 @@ void DCMat::addColumnMatrix(double number)
         return;
     }
 
-    matrixTemp->j++;
-    // cout << "\ncol[" << matrixTemp->i << "][" << matrixTemp->j << "]" << std::endl;
+    jMatrix++;
+    // cout << "\ncol[" << iMatrix << "][" << jMatrix << "]" << std::endl;
     
-    // cout << "Tamanho: " << matrixTemp->matriz.size() << std::endl;
-    
-    if(matrixTemp->j > matrixTemp->i){
-        if(matrixTemp->j > matrixTemp->matriz.size()){
-            growMatrix();  
+    // cout << "Tamanho: " << matrixTemp->linhas << "x" << matrixTemp->colunas << std::endl;
+    if(jMatrix > iMatrix){
+        if(jMatrix > matrixTemp->colunas){
+            resizeColumns(matrixTemp, jMatrix);
         }
     }else{
-        if(matrixTemp->i + 1 > matrixTemp->matriz.size()){
-            growMatrix();  
+        if(iMatrix + 1 > matrixTemp->linhas){
+            resizeRows(matrixTemp, iMatrix + 1);
         }
     }
 
     if(!flagErro){
-        // cout << "[" << matrixTemp->i << "][" << matrixTemp->j - 1 << "]: " << number << std::endl;
-        matrixTemp->matriz[matrixTemp->i][matrixTemp->j - 1] = number;
+        // cout << "[" << iMatrix << "][" << jMatrix - 1 << "]: " << number << std::endl;
+        matrixTemp->matriz[iMatrix][jMatrix - 1] = number;
     }
 }
 
@@ -338,13 +351,13 @@ void DCMat::addRowMatrix()
         return;
     }
 
-    matrixTemp->i++;
-    matrixTemp->j = 0;
-    // cout << "\nlin[" << matrixTemp->i << "][" << matrixTemp->j << "]" << std::endl;
+    iMatrix++;
+    jMatrix = 0;
+    // cout << "\nlin[" << iMatrix << "][" << jMatrix << "]" << std::endl;
 
-    // cout << "Tamanho: " << matrixTemp->matriz.size() << std::endl;
-    if(matrixTemp->i > matrixTemp->matriz.size()){
-        growMatrix();
+    // cout << "Tamanho: " << matrixTemp->linhas << "x" << matrixTemp->colunas << std::endl;
+    if(iMatrix > matrixTemp->linhas){
+        resizeRows(matrixTemp, iMatrix);
     }
 }
 
@@ -378,10 +391,11 @@ void DCMat::showAllSymbols()
         if(simbolo.second.tipo == Tipo::FLOAT){
             cout << "FLOAT";
         }else{
-            cout << "MATRIX [" << fixed << std::setprecision(0) << simbolo.second.valor << "]";
+            cout << "MATRIX [" << simbolo.second.matriz->linhas << "]";
             
-            if(simbolo.second.valor > 1){
-                cout << "[" << fixed << std::setprecision(0) << simbolo.second.valor << "]";
+            if((simbolo.second.matriz->linhas == 1 && simbolo.second.matriz->colunas > 1)
+                || (simbolo.second.matriz->linhas != 1)){
+                cout << "[" << simbolo.second.matriz->colunas << "]";
             }
         }
     }
@@ -433,10 +447,9 @@ void DCMat::addSymbol(string name, Tipo type, double value)
         }
         else if(type == Tipo::MATRIX){
             Matriz *novaMatriz = matrixTemp;
-            double tamanho = novaMatriz->tamanho;
             matrixTemp = createMatrix();
 
-            symbols[name] = {type, tamanho, novaMatriz};
+            symbols[name] = {type, 0, novaMatriz};
 
             showMatrix(symbols[name].matriz);
             cout << "\n\n";
