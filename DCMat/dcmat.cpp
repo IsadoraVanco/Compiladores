@@ -111,9 +111,17 @@ void DCMat::showError(Erro error)
         flagErro = true;
         break;
 
+    case Erro::UndefinedSymbol:
+        cout << "\nUndefined symbol";
+        break;
+
     case Erro::NoMatrix:
         cout << "\nNo matrix defined!";
         break;
+
+    case Erro::MatrixLimits:
+        showErrorMessage("Matrix limits out of boundaries.");
+        break;    
     
     default:
         break;
@@ -289,7 +297,7 @@ Matriz* DCMat::createMatrix()
 void DCMat::resizeColumns(Matriz *matriz, int columns)
 {
     if(columns > maxMatrix){
-        showErrorMessage("Matrix limits out of boundaries.");
+        showError(Erro::MatrixLimits);
         
         delete matrixTemp;
         matrixTemp = createMatrix();
@@ -307,7 +315,7 @@ void DCMat::resizeColumns(Matriz *matriz, int columns)
 void DCMat::resizeRows(Matriz *matriz, int rows)
 {
     if(rows > maxMatrix){
-        showErrorMessage("Matrix limits out of boundaries.");
+        showError(Erro::MatrixLimits);
         
         delete matrixTemp;
         matrixTemp = createMatrix();
@@ -415,7 +423,7 @@ void DCMat::showSymbol(string name)
             cout << "\n" << name << " = " << fixed << std::setprecision(float_precision) << symbols[name].valor;
         }      
     }else{
-        cout << "\nUndefined symbol";
+        showError(Erro::UndefinedSymbol);
     }
 }
 

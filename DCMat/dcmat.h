@@ -11,7 +11,13 @@ using std::unordered_map;
 #define PI 3.14159265
 #define NUM_EULER 2.71828182
 
-enum class Erro {DividedByZero, VariableX, NoMatrix};
+enum class Erro {
+    DividedByZero, 
+    VariableX, 
+    UndefinedSymbol,
+    NoMatrix, 
+    MatrixLimits
+};
 
 class DCMat
 {
@@ -36,6 +42,7 @@ private:
     Matriz *matrixTemp;
     int iMatrix;
     int jMatrix;
+
     unordered_map<string, Variavel> symbols;
 
     // Funções privadas
