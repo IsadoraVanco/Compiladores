@@ -51,7 +51,6 @@ int emitirErroSintatico(int erro);
 
 %type <numInt> inteiro
 %type <numDouble> expressao exPrioM exPrioMM exPrioMMM valorUnario
-%type <numDouble> exprCalcula
 %type <numDouble> valor valorExpr 
 %type <numDouble> funcao
 
@@ -128,12 +127,6 @@ simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($
             | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
             ;
 
-funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
-            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = std::cos($3); }
-            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = std::tan($3); }
-            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = std::abs($3); }
-            ;
-
 calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | SUM PRT_ESQ VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG
             | SOLVE DETERMINANT PNT_VIRG                    { dcmat->solveDeterminant(); }
@@ -142,26 +135,26 @@ calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | PLOT PNT_VIRG
             | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
             | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG
-            | expressao                                   { dcmat->showValue($1); }
+            | expressao                                     { dcmat->showValue($1); }
             ;
 
-// Arrumar
-exprCalcula : expressao         { $$ = $1; }
-            | VARIAVEL_X        { dcmat->showError(Erro::VariableX); }
+funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); /*cout << "sen ";*/ }
+            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = std::cos($3); /*cout << "cos ";*/ }
+            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = std::tan($3); /*cout << "tan ";*/ }
+            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = std::abs($3); /*cout << "abs ";*/ }
             ;
 
 // Em ordem de precedência (da menor prioridade para a maior)
-expressao   : PRT_ESQ expressao PRT_DIR         { $$ = $2; }
-            | exPrioM                           { $$ = $1; }
+expressao   : exPrioM                           { $$ = $1; }
             ;
-        
-exPrioM     : exPrioM MAIS exPrioMM             { $$ = $1 + $3; }
-            | exPrioM MENOS exPrioMM            { $$ = $1 - $3; }
+
+exPrioM     : exPrioM MAIS exPrioMM             { $$ = $1 + $3; /*cout << "+ ";*/ }
+            | exPrioM MENOS exPrioMM            { $$ = $1 - $3; /*cout << "- ";*/ }
             | exPrioMM                          { $$ = $1; }
             ;                               
 
-exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = $1 * $3; }
-            | exPrioMM RESTO exPrioMMM          { $$ = std::fmod($1, $3); }
+exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = $1 * $3; /*cout << "* ";*/ }
+            | exPrioMM RESTO exPrioMMM          { $$ = std::fmod($1, $3); /*cout << "% ";*/ }
             | exPrioMM DIVISAO exPrioMMM           
             { 
                 if ($3 == 0){
@@ -170,12 +163,14 @@ exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = $1 * $3; }
                 }else{
                     $$ = $1 / $3;
                 }
+                //cout << "/ ";
             }
             | exPrioMMM                         { $$ = $1; }
             ;
 
-exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = std::pow($1, $3); }
-            | valorUnario                       { $$ = $1; }
+exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = std::pow($1, $3); /*cout << "^ ";*/ }
+            | PRT_ESQ expressao PRT_DIR         { $$ = $2; }
+            | valorUnario                       { $$ = $1; /*cout << $$ << " ";*/}
             ;
 
 valorUnario : valorExpr         { $$ = $1; }
@@ -183,11 +178,12 @@ valorUnario : valorExpr         { $$ = $1; }
             | MENOS valorExpr   { $$ = -$2; }
             ;
 
-valorExpr   : valor         { $$ = $1; }
-            | CONSTANTE_E   { $$ = NUM_EULER; }
-            | CONSTANTE_PI  { $$ = PI; }
+valorExpr   : valor         { $$ = $1; /*cout << $$ << " ";*/}
+            | CONSTANTE_E   { $$ = NUM_EULER; /*cout << NUM_EULER << " ";*/}
+            | CONSTANTE_PI  { $$ = PI; /*cout << PI << " ";*/}
             | IDENTIFIER    { $$ = dcmat->getSymbol($1); free($1); }
             | funcao        { $$ = $1; }
+            | VARIAVEL_X    { dcmat->showError(Erro::VariableX); }
             ;
 
 %%
