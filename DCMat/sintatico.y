@@ -133,9 +133,9 @@ funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); }
 
 calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | SUM PRT_ESQ VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG
-            | SOLVE DETERMINANT PNT_VIRG
-            | SOLVE LINEAR_SYS PNT_VIRG   
-            | IDENTIFIER PNT_VIRG                         { dcmat->showSymbol($1); free($1); } 
+            | SOLVE DETERMINANT PNT_VIRG                    { dcmat->solveDeterminant(); }
+            | SOLVE LINEAR_SYS PNT_VIRG                     { dcmat->solveLinearSystem(); }
+            | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
             | PLOT PNT_VIRG
             | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
             | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG

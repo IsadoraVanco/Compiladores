@@ -15,8 +15,10 @@ enum class Erro {
     DividedByZero, 
     VariableX, 
     UndefinedSymbol,
+    
     NoMatrix, 
-    MatrixLimits
+    MatrixLimits,
+    MatrixFormat
 };
 
 class DCMat
@@ -42,6 +44,9 @@ private:
     Matriz *matrixTemp;
     int iMatrix;
     int jMatrix;
+
+    Matriz matrixL;
+    Matriz matrixU;
 
     unordered_map<string, Variavel> symbols;
 
@@ -87,10 +92,15 @@ private:
     void resizeRows(Matriz *matriz, int rows);
 
     /**
-     * @brief Aumenta o tamanho da matriz quadrada 
-     *  em uma unidade
+     * @brief Decompõe a matriz definida em LU
      */
-    void growMatrix();
+    void luDecomposition();
+
+    /**
+     * @brief Calcula o determinante da matriz U
+     * @return O valor do determinante
+     */
+    double calculateDeterminant();
     
     /******************************************************
     *       SÍMBOLOS E DECLARAÇÕES
@@ -215,6 +225,18 @@ public:
      * @brief Adiciona a matriz temporária na variável de matriz
      */
     void addMatrix();
+
+    /**
+     * @brief Resolve o determinante da matriz definida
+     * OBS: Deve ser uma matriz quadrada
+     */
+    void solveDeterminant();
+
+    /**
+     * @brief Resolve o sistema linear definido na matriz
+     * OBS: Deve ser uma matriz n x (n + 1)
+     */
+    void solveLinearSystem();
 
     /******************************************************
     *       SÍMBOLOS E DECLARAÇÕES

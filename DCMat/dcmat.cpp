@@ -122,6 +122,10 @@ void DCMat::showError(Erro error)
     case Erro::MatrixLimits:
         showErrorMessage("Matrix limits out of boundaries.");
         break;    
+
+    case Erro::MatrixFormat:
+        cout << "\nMatrix format incorrect!";
+        break;
     
     default:
         break;
@@ -226,7 +230,8 @@ void DCMat::showMatrix(Matriz *matriz)
         // Pega todas as quantidades da parte inteira dos números 
         for(int i = 1; i < numLinhas; i++){
             for(int j = 0; j < numColunas; j++){
-                digitos[i][j] = countDigits(matriz->matriz[i][j]);
+                digito = countDigits(matriz->matriz[i][j]);
+                digitos[i][j] = digito;
 
                 if(digitos[i][j] > digitos[numLinhas][j]){
                     digitos[numLinhas][j] = digito;
@@ -383,6 +388,164 @@ void DCMat::addMatrix()
 
     matrixTemp = createMatrix();
     // cout << "Matrix adicionada\n";
+}
+
+void DCMat::luDecomposition()
+{
+    if(matrix == nullptr){
+        showError(Erro::NoMatrix);
+    }else{
+        int tamanho = matrix->linhas;
+
+        // Inicializa L U e preenche com zeros
+        resizeColumns(&matrixL, tamanho);
+        resizeRows(&matrixL, tamanho);
+        resizeColumns(&matrixU, tamanho);
+        resizeRows(&matrixU, tamanho);
+
+        for(int i = 0; i < tamanho; i++){
+            // Construir elementos de U
+            for(int j = i; j < tamanho; j++){
+                double soma = 0.0;
+
+                for(int k = 0; k < i; k++){
+                    soma += matrixL.matriz[i][k] * matrixU.matriz[k][j];
+                }
+                matrixU.matriz[i][j] = matrix->matriz[i][j] - soma;
+            }
+
+            // Construir elementos de L
+            for(int j = i; j < tamanho; j++){
+                if(i == j){
+                    // Diagonal principal de L é 1
+                    matrixL.matriz[i][i] = 1.0;
+                }else{
+                    double soma = 0.0;
+
+                    for(int k = 0; k < i; k++){
+                        soma += matrixL.matriz[j][k] * matrixU.matriz[k][i];
+                    }
+
+                    if(matrixU.matriz[i][i] == 0){
+                        matrixL.matriz[j][i] = 0;
+                    }else{
+                        matrixL.matriz[j][i] = (matrix->matriz[j][i] - soma) / matrixU.matriz[i][i];
+                    }
+                }
+            }
+        }
+
+        // showMatrix(&matrixL);
+        // cout << "\nMatriz L\n";
+        // showMatrix(&matrixU);
+        // cout << "\nMatriz U\n";
+    }
+}
+
+double DCMat::calculateDeterminant()
+{
+    // det(A) = det(L) * det(U)
+    // det(L) = 1
+    double determinante = 1.0;
+
+    luDecomposition();
+    for(int i = 0; i < matrixU.linhas; i++){
+        determinante *= matrixU.matriz[i][i];
+    }
+
+    return determinante;
+}
+
+void DCMat::solveDeterminant()
+{
+    if(matrix == nullptr){
+        showError(Erro::NoMatrix);
+    }else{
+        // Verifica se é quadrada
+        if(matrix->colunas != matrix->linhas){
+            showError(Erro::MatrixFormat);
+        }else{
+            showValue(calculateDeterminant());
+        }
+    }
+}
+
+void DCMat::solveLinearSystem()
+{
+    if(matrix == nullptr){
+        showError(Erro::NoMatrix);
+    }else{
+        // Verifica se é uma matriz n x (n + 1)
+        if(matrix->colunas != matrix->linhas + 1){
+            showError(Erro::MatrixFormat);
+        }else{
+            int n = matrix->linhas;
+
+            // A * x = b
+            // A = L * U
+            double determinante = calculateDeterminant();
+            // cout << "\nDeterminante: " << determinante << "\n\n";
+            
+            // Inicializa b
+            vector<double> b(n, 0.0);
+            for(int i = 0; i < n; i++){
+                b[i] = matrix->matriz[i][n];
+                // cout << "b[" << i << "]: " << b[i] << std::endl;
+            }
+            // cout << "\n";
+
+            // L * y = b
+            vector<double> y(n, 0.0);
+            for (int i = 0; i < n; i++) {
+                double soma = 0.0;
+
+                for (int j = 0; j < i; j++) {
+                    soma += matrixL.matriz[i][j] * y[j];
+                }
+                y[i] = b[i] - soma;
+                // cout << "y[" << i << "]: " << y[i] << std::endl;
+            }
+            // cout << "\n";
+
+            bool impossivel = false;
+
+            // U * x = y
+            vector<double> x(n, 0.0);
+            for (int i = n - 1; i >= 0; i--) {
+                double soma = 0.0;
+
+                for (int j = i + 1; j < n; j++) {
+                    soma += matrixU.matriz[i][j] * x[j];
+                }
+
+                if(matrixU.matriz[i][i] == 0){
+                    if(y[i] - soma != 0){
+                        impossivel = true;
+                    }
+                    x[i] = 0.0;
+                }else{
+                    x[i] = (y[i] - soma) / matrixU.matriz[i][i];
+                }
+                // cout << "x[" << i << "]: " << x[i] << std::endl;
+            }
+            
+            // Analisa o determinante
+            if(determinante == 0){
+                if(impossivel){
+                    cout << "\nSI - The Linear System has no solution";
+                }else{
+                    cout << "\nSPI - The Linear System has infinitely many solutions";
+                }
+            }else{
+                // Mostra o resultado
+                cout << "\nMatrix x:\n";
+
+                for(int i = 0; i < n; i++){
+                    showValue(x[i]);
+                }
+            }
+        }
+    }
 }
 
 /******************************************************
