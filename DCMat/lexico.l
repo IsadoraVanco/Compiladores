@@ -1,16 +1,20 @@
 %option noyywrap
 %{
+#include <iostream>
+#include <string>
 #include "tokens.h"
 
-#include <iostream>
-
 using std::cout;
+using std::string;
+
+extern char *token;
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO};
 
 // Protótipos de funções
 int emitirErroLexico(int erro);
+void copiarToken();
 %}
 
 /* Declarações regulares */
@@ -30,70 +34,91 @@ var_x       [Xx]
 
 %%
 
-about           return ABOUT;
-axis            return AXIS;
-connect_dots    return DOTS;
-determinant     return DETERMINANT;
-erase           return ERASE;
-float           return FLOAT;
-h_view          return H_VIEW;
-integral_steps  return INTEGRAL_STEPS;
-integrate       return INTEGRATE;
-linear_system   return LINEAR_SYS;
-matrix          return MATRIX;
-off             return OFF;
-on              return ON;
-plot            return PLOT;
-precision       return PRECISION;
-quit            return QUIT;
-reset           return RESET;
-rpn             return RPN;
-set             return SET;
-settings        return SETTINGS;
-show            return SHOW;
-solve           return SOLVE;
-sum             return SUM;
-symbols         return SYMBOLS;
-v_view          return V_VIEW;
+about           copiarToken(); return ABOUT;
+axis            copiarToken(); return AXIS;
+connect_dots    copiarToken(); return DOTS;
+determinant     copiarToken(); return DETERMINANT;
+erase           copiarToken(); return ERASE;
+float           copiarToken(); return FLOAT;
+h_view          copiarToken(); return H_VIEW;
+integral_steps  copiarToken(); return INTEGRAL_STEPS;
+integrate       copiarToken(); return INTEGRATE;
+linear_system   copiarToken(); return LINEAR_SYS;
+matrix          copiarToken(); return MATRIX;
+off             copiarToken(); return OFF;
+on              copiarToken(); return ON;
+plot            copiarToken(); return PLOT;
+precision       copiarToken(); return PRECISION;
+quit            copiarToken(); return QUIT;
+reset           copiarToken(); return RESET;
+rpn             copiarToken(); return RPN;
+set             copiarToken(); return SET;
+settings        copiarToken(); return SETTINGS;
+show            copiarToken(); return SHOW;
+solve           copiarToken(); return SOLVE;
+sum             copiarToken(); return SUM;
+symbols         copiarToken(); return SYMBOLS;
+v_view          copiarToken(); return V_VIEW;
 
-sen             return SENO;
-cos             return COSSENO;
-tan             return TANGENTE;
-abs             return ABSOLUTO;
+sen             copiarToken(); return SENO;
+cos             copiarToken(); return COSSENO;
+tan             copiarToken(); return TANGENTE;
+abs             copiarToken(); return ABSOLUTO;
 
-"+"             return MAIS; 
-"-"             return MENOS;
-"*"             return MULTIPLICACAO;
-"/"             return DIVISAO;
-"^"             return POTENCIA;
-"%"             return RESTO;
+"+"             copiarToken(); return MAIS; 
+"-"             copiarToken(); return MENOS;
+"*"             copiarToken(); return MULTIPLICACAO;
+"/"             copiarToken(); return DIVISAO;
+"^"             copiarToken(); return POTENCIA;
+"%"             copiarToken(); return RESTO;
 
-"("             return PRT_ESQ;
-")"             return PRT_DIR;
+"("             copiarToken(); return PRT_ESQ;
+")"             copiarToken(); return PRT_DIR;
 
-":"             return DOIS_PONTOS;
-"="             return IGUAL;
-":="            return ATRIBUICAO;
-"["             return CLCT_ESQ;
-"]"             return CLCT_DIR;
-";"             return PNT_VIRG;
-","             return VIRGULA;
+":"             copiarToken(); return DOIS_PONTOS;
+"="             copiarToken(); return IGUAL;
+":="            copiarToken(); return ATRIBUICAO;
+"["             copiarToken(); return CLCT_ESQ;
+"]"             copiarToken(); return CLCT_DIR;
+";"             copiarToken(); return PNT_VIRG;
+","             copiarToken(); return VIRGULA;
 
-{const_pi}      return CONSTANTE_PI;
-{const_e}       return CONSTANTE_E;
+{const_pi}      copiarToken(); return CONSTANTE_PI;
+{const_e}       copiarToken(); return CONSTANTE_E;
+{var_x}         copiarToken(); return VARIAVEL_X;
 
-{num_real}      yylval.numDouble = atof(yytext); return NUM_REAL;
-{num_int}       yylval.numInt = atoi(yytext); return NUM_INT;
-
-{var_x}         return VARIAVEL_X;
-{id}            yylval.text = strdup(yytext); return IDENTIFIER;        
-
-{nova_linha}    return NOVA_LINHA;
+{nova_linha}    copiarToken(); return NOVA_LINHA;
 {espaco}        ;
 
-.               emitirErroLexico(TOKEN_DESCONHECIDO); 
+{num_real}      {
+                    yylval.numDouble = atof(yytext); 
+                    copiarToken(); 
+                    return NUM_REAL;
+}
+
+{num_int}       {
+                    yylval.numInt = atoi(yytext); 
+                    copiarToken(); 
+                    return NUM_INT;
+}
+
+{id}            { 
+                    yylval.text = strdup(yytext); 
+                    copiarToken(); 
+                    return IDENTIFIER;  
+}      
+
+.               emitirErroLexico(TOKEN_DESCONHECIDO); return ERRO; 
 
 %%
+
+void copiarToken()
+{
+    if(token){
+        free(token);
+    }
+    token = strdup(yytext);
+}
 
 int emitirErroLexico(int erro)
 {
@@ -101,12 +126,11 @@ int emitirErroLexico(int erro)
     {
         case TOKEN_DESCONHECIDO:
             cout << "\nInvalid Symbol: " << yytext << "\n\n";
-            return 1;
-            break;
+           break;
 
         default:
             break;
     }
 
-    return 0;
+    return ERRO;
 }

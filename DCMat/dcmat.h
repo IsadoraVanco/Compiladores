@@ -271,5 +271,6 @@ public:
 
 extern DCMat *dcmat;
 extern Limites *limites;
+extern char *token;
 
 #endif

@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <cmath>
+#include <string.h>
 #include "types.h"
 #include "dcmat.h"
 
@@ -16,7 +17,7 @@ enum { FIM = 0, SUCESSO};
 
 int yylex(void);
 int yyparser(void);
-int yyerror(const void *string);
+void yyerror(const void *string);
 
 int separarComandos();
 int emitirErroSintatico(int erro);
@@ -64,7 +65,9 @@ inicial     : configSemRtn NOVA_LINHA   { /*cout << "config sem retorno\n";*/ re
             | calcula NOVA_LINHA        { /*cout << "calcula\n";*/ return separarComandos(); }
             | NOVA_LINHA                { return SUCESSO; }
             | QUIT NOVA_LINHA           { return FIM; }
-            | error                     { return emitirErroSintatico(TOKEN_INESPERADO); }
+            | error                     { /*cout << "ERRROOOOO\n";*/ return FIM; }
+            | ERRO error                { /*cout << "?\n";*/ return FIM; }
+            | ERRO                      { /*cout << "ERRO do Lexico\n";*/ return SUCESSO; }
             ;
 
 config      : ABOUT PNT_VIRG                        { dcmat->showAbout(); }
@@ -197,7 +200,7 @@ int separarComandos()
 
 int emitirErroSintatico(int erro)
 {
-    cout << "SYNTAX ERROR: ";
+    cout << "\nSYNTAX ERROR: ";
 
     switch(erro)
     {
@@ -206,7 +209,11 @@ int emitirErroSintatico(int erro)
             break;
 
         case TOKEN_INESPERADO:
-            cout << "[" << yytext << "]\n";
+            if(strcmp(token, "\n") == 0){
+                cout << "[\\n]\n";
+            }else{
+                cout << "[" << token << "]\n";
+            }
             break;
 
         default:
@@ -216,9 +223,8 @@ int emitirErroSintatico(int erro)
     return SUCESSO;
 }
 
-int yyerror(const void *string)
+void yyerror(const void *string)
 {
-    emitirErroSintatico(TOKEN_FALTANTE);
+    emitirErroSintatico(TOKEN_INESPERADO);
     cout << "erro sintatico" << endl;
-    return FIM;
 }

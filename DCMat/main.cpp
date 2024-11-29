@@ -12,6 +12,8 @@ extern int yylex_destroy();
 DCMat *dcmat = nullptr;
 // Armazena os limites lidos
 Limites *limites;
+// Armazena o token que está sendo lido
+char *token = NULL;
 
 int main() {
     dcmat = new DCMat();
@@ -26,6 +28,9 @@ int main() {
 
     delete dcmat;
     delete limites;
+    if(token){
+        free(token);
+    }
     yylex_destroy();
 
     return 0;
