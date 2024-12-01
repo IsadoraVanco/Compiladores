@@ -2,6 +2,7 @@
 #define _DCMAT_H_
 
 #include "types.h"
+#include "ast.h"
 #include <string>
 #include <unordered_map>
 
@@ -198,7 +199,13 @@ public:
    /**
     * @brief Mostra o valor da expressão
     */
-   void showValue(double value);
+    void showValue(double value);
+    
+    /******************************************************
+    *       EXPRESSÕES
+    *******************************************************/
+
+    void showRpnExpression(NodeArvore *node);
 
     /******************************************************
     *       MATRIZ

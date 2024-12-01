@@ -4,8 +4,8 @@ PROJETO = dcmat
 # ******** ARQUIVOS **********************************
 
 # Arquivos c/c++
-CXX_SRCS = main.cpp dcmat.cpp
-CXX_HEADERS = dcmat.h
+CXX_SRCS = main.cpp dcmat.cpp ast.cpp
+CXX_HEADERS = dcmat.h types.h ast.h
 
 # Arquivos flex
 LEX_SRCS = lexico.l
@@ -53,10 +53,12 @@ $(BIS_GNRT): $(BIS_SRCS)
 clean:
 	rm -f $(PROJETO) $(LEX_GNRT) $(BIS_GNRT) $(BIS_OUT) *.o
 
+# Limpa o terminal e roda o código
 run: $(PROJETO)
 	clear
 	./$(PROJETO)
 
+# Limpa o terminal e roda o código com Valgrind
 valgrind: $(PROJETO)
 	clear
 	valgrind --leak-check=full --show-leak-kinds=all ./$(PROJETO)

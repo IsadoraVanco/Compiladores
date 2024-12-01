@@ -182,6 +182,17 @@ void DCMat::showValue(double value)
 }   
 
 /******************************************************
+*       EXPRESSÕES
+*******************************************************/
+
+void DCMat::showRpnExpression(NodeArvore *node)
+{
+    cout << "\nExpression in RPN format:\n\n";
+    showPostOrder(node, float_precision);
+    freeNodes(node);
+}
+
+/******************************************************
 *       MATRIZ
 *******************************************************/
 

@@ -4,6 +4,7 @@
 #include <string.h>
 #include "types.h"
 #include "dcmat.h"
+#include "ast.h"
 
 using std::cout;
 using std::endl;
@@ -27,6 +28,7 @@ int emitirErroSintatico(int erro);
     double numDouble;
     int numInt;
     char *text;
+    struct nodeArvore *node;
 }
 
 %defines "tokens.h"
@@ -50,9 +52,9 @@ int emitirErroSintatico(int erro);
 %token <numDouble> NUM_REAL
 
 %type <numInt> inteiro
-%type <numDouble> expressao exPrioM exPrioMM exPrioMMM valorUnario
-%type <numDouble> valor valorExpr 
-%type <numDouble> funcao
+%type <numDouble> numero 
+%type <node> expressao exPrioM exPrioMM exPrioMMM
+%type <node> funcao valorUnario numericos valorExpr
 
 %start inicial
 %%
@@ -87,7 +89,7 @@ configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
             | MATRIX IGUAL matriz PNT_VIRG          { dcmat->addMatrix(); }
             ;
 
-limites     : valor DOIS_PONTOS valor   { limites->low = $1; limites->high = $3; }
+limites     : numero DOIS_PONTOS numero   { limites->low = $1; limites->high = $3; }
             ;
 
 inteiro     : NUM_INT           { $$ = $1; }
@@ -95,7 +97,7 @@ inteiro     : NUM_INT           { $$ = $1; }
             | MENOS NUM_INT     { $$ = -$2; }
             ;
 
-valor       : inteiro           { $$ = $1; }
+numero      : inteiro           { $$ = $1; }
             | NUM_REAL          { $$ = $1; }
             | MAIS NUM_REAL     { $$ = $2; }
             | MENOS NUM_REAL    { $$ = -$2; }
@@ -115,15 +117,15 @@ linha       : CLCT_ESQ valores CLCT_DIR     { dcmat->addRowMatrix(); }
             ;
 
 // Adiciona uma coluna
-valores     : valor                         { dcmat->addColumnMatrix($1); }
-            | valores VIRGULA valor         { dcmat->addColumnMatrix($3); }
+valores     : numero                         { dcmat->addColumnMatrix($1); }
+            | valores VIRGULA numero         { dcmat->addColumnMatrix($3); }
             ;
 
 simbSemRtn  : IDENTIFIER ATRIBUICAO matriz PNT_VIRG     { dcmat->addSymbol($1, Tipo::MATRIX, 0); free($1); }
             | SHOW SYMBOLS PNT_VIRG                     { dcmat->showAllSymbols(); }
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addSymbol($1, Tipo::FLOAT, $3); free($1); }
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { free($1); }
             | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
             ;
 
@@ -134,56 +136,52 @@ calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
             | PLOT PNT_VIRG
             | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
-            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG
-            | expressao                                     { dcmat->showValue($1); }
-            ;
-
-funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = std::sin($3); /*cout << "sen ";*/ }
-            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = std::cos($3); /*cout << "cos ";*/ }
-            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = std::tan($3); /*cout << "tan ";*/ }
-            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = std::abs($3); /*cout << "abs ";*/ }
+            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG        { dcmat->showRpnExpression($3); }
+            | expressao                                     
             ;
 
 // Em ordem de precedência (da menor prioridade para a maior)
 expressao   : exPrioM                           { $$ = $1; }
             ;
 
-exPrioM     : exPrioM MAIS exPrioMM             { $$ = $1 + $3; /*cout << "+ ";*/ }
-            | exPrioM MENOS exPrioMM            { $$ = $1 - $3; /*cout << "- ";*/ }
+exPrioM     : exPrioM MAIS exPrioMM             { $$ = makeOperatorNode(Operador::ADICAO, $1, $3); }
+            | exPrioM MENOS exPrioMM            { $$ = makeOperatorNode(Operador::SUBTRACAO, $1, $3); }
             | exPrioMM                          { $$ = $1; }
             ;                               
 
-exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = $1 * $3; /*cout << "* ";*/ }
-            | exPrioMM RESTO exPrioMMM          { $$ = std::fmod($1, $3); /*cout << "% ";*/ }
-            | exPrioMM DIVISAO exPrioMMM           
-            { 
-                if ($3 == 0){
-                    dcmat->showError(Erro::DividedByZero);
-                    return separarComandos();
-                }else{
-                    $$ = $1 / $3;
-                }
-                //cout << "/ ";
-            }
+exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = makeOperatorNode(Operador::MULTIPLICACAO, $1, $3); }
+            | exPrioMM RESTO exPrioMMM          { $$ = makeOperatorNode(Operador::RESTO, $1, $3); }
+            | exPrioMM DIVISAO exPrioMMM        { $$ = makeOperatorNode(Operador::DIVISAO, $1, $3); }
             | exPrioMMM                         { $$ = $1; }
             ;
 
-exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = std::pow($1, $3); /*cout << "^ ";*/ }
+exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = makeOperatorNode(Operador::POTENCIA, $1, $3); }
             | PRT_ESQ expressao PRT_DIR         { $$ = $2; }
-            | valorUnario                       { $$ = $1; /*cout << $$ << " ";*/}
+            | valorUnario                       { $$ = $1; }
             ;
 
 valorUnario : valorExpr         { $$ = $1; }
-            | MAIS valorExpr    { $$ = $2; }
-            | MENOS valorExpr   { $$ = -$2; }
+            | MAIS valorExpr    { $$ = makeUnaryNode(Operador::POSITIVO, $2); }
+            | MENOS valorExpr   { $$ = makeUnaryNode(Operador::NEGATIVO, $2); }
+            | numericos         { $$ = $1; }
+            | MAIS numericos    { $$ = makeUnaryNode(Operador::POSITIVO, $2); }
+            | MENOS numericos   { $$ = makeUnaryNode(Operador::NEGATIVO, $2); }
             ;
 
-valorExpr   : valor         { $$ = $1; /*cout << $$ << " ";*/}
-            | CONSTANTE_E   { $$ = NUM_EULER; /*cout << NUM_EULER << " ";*/}
-            | CONSTANTE_PI  { $$ = PI; /*cout << PI << " ";*/}
-            | IDENTIFIER    { $$ = dcmat->getSymbol($1); free($1); }
+numericos   : numero        { $$ = makeConstantNode($1); }
+            | CONSTANTE_E   { $$ = makeConstantNode(NUM_EULER); }
+            | CONSTANTE_PI  { $$ = makeConstantNode(PI); }
+            ;
+
+valorExpr   : VARIAVEL_X    { $$ = makeXNode(token); }
             | funcao        { $$ = $1; }
-            | VARIAVEL_X    { dcmat->showError(Erro::VariableX); }
+            | IDENTIFIER    { $$ = makeIdNode($1); free($1); }
+            ;
+
+funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = makeFunctionNode(Funcao::SENO, $3); }
+            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = makeFunctionNode(Funcao::COSSENO, $3); }
+            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::TANGENTE, $3); }
+            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::ABSOLUTO, $3); }
             ;
 
 %%
