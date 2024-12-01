@@ -15,6 +15,7 @@ DCMat::DCMat()
     matrixTemp = createMatrix();
 
     flagErro = false;
+    flagUndefined = false;
 }
 
 // Desconstrutor
@@ -108,7 +109,6 @@ void DCMat::showError(Erro error)
 
     case Erro::VariableX:
         cout << "\nThe x variable cannot be present on expressions.";
-        flagErro = true;
         break;
 
     case Erro::UndefinedSymbol:
@@ -170,26 +170,128 @@ void DCMat::resetSettings()
 }
 
 /******************************************************
-*       CALCULAR VALORES
-*******************************************************/
-
-void DCMat::showValue(double value)
-{
-    if(!flagErro){
-        cout << "\n" << fixed << std::setprecision(float_precision) << value;
-    }
-    flagErro = false;
-}   
-
-/******************************************************
 *       EXPRESSÕES
 *******************************************************/
 
-void DCMat::showRpnExpression(NodeArvore *node)
+double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue)
+{
+    if(!root){
+        return 0.0;
+    }
+
+    switch(root->tipo) 
+    {
+        case TipoElemento::FUNCAO: 
+        {
+            double valor = calculateValue(root->esquerda, variableX, xValue);
+            
+            if(root->id == "SEN"){
+                return std::sin(valor);
+            }else if (root->id == "COS"){
+                return std::cos(valor);
+            }else if (root->id == "TAN"){
+                return std::tan(valor);
+            }else if (root->id == "ABS"){
+                return std::abs(valor);
+            }
+            break;
+        }
+        case TipoElemento::OPERADOR: 
+        {
+            double valorDir = calculateValue(root->direita, variableX, xValue);
+
+            if(root->id == "+"){
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                return valorEsq + valorDir;
+            }else if (root->id == "-"){
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                return valorEsq - valorDir;
+            }else if (root->id == "*"){
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                return valorEsq * valorDir;
+            }else if (root->id == "/"){
+                if (valorDir != 0) {
+                    double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                    return valorEsq / valorDir;
+                }else{
+                    flagErro = true;
+                    showError(Erro::DividedByZero);
+                    return 0.0;
+                }
+            }else if(root->id == "%"){
+                if(valorDir != 0){
+                    double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                    return std::fmod(valorEsq, valorDir);
+                }else{
+                    flagErro = true;
+                    showError(Erro::DividedByZero);
+                    return 0.0;
+                }
+            }else if (root->id == "^"){
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                return std::pow(valorEsq, valorDir);
+            }
+            break;
+        }
+        case TipoElemento::UNARIO: 
+        {
+            double valor = calculateValue(root->esquerda, variableX, xValue);
+            
+            if(root->id == "-"){
+                return -valor;
+            }
+            return valor;
+        }
+        case TipoElemento::IDENTIFICADOR: 
+        {
+            if(!flagErro){
+                return getSymbol(root->id);
+            }
+            return 0.0;
+        }
+        case TipoElemento::VARIAVEL_X: 
+        {
+            if(variableX){
+                return xValue;
+            }
+            flagErro = true;
+            return 0.0;
+        }
+        case TipoElemento::CONSTANTE: 
+        {
+            return root->numero;
+        }
+        default:
+            break;
+    }
+}
+
+void DCMat::showValue(double value)
+{
+    if(!flagErro && !flagUndefined){
+        cout << "\n" << fixed << std::setprecision(float_precision) << value;
+    }
+    flagErro = false;
+    flagUndefined = false;
+}   
+
+void DCMat::showRpnExpression(NodeArvore *root)
 {
     cout << "\nExpression in RPN format:\n\n";
-    showPostOrder(node, float_precision);
-    freeNodes(node);
+    showPostOrder(root, float_precision);
+    freeNodes(root);
+}
+
+void DCMat::showExpression(NodeArvore *root)
+{
+    if(isXVariablePresent(root)){
+        showError(Erro::VariableX);
+    }else{
+        double valor = calculateValue(root, false, 0);
+        showValue(valor);
+    }
+
+    freeNodes(root);
 }
 
 /******************************************************
@@ -607,7 +709,7 @@ double DCMat::getSymbol(string name)
         return symbols[name].valor;
     }else{
         cout << "\nUndefined symbol [" << name << "]";
-        flagErro = true;
+        flagUndefined = true;
         return 0;
     }
 }
@@ -643,4 +745,9 @@ void DCMat::addSymbol(string name, Tipo type, double value)
 bool DCMat::symbolExists(string name)
 {
     return symbols.find(name) != symbols.end();
+}
+
+bool DCMat::isXVariablePresent(NodeArvore *root)
+{
+    return findElement(root, TipoElemento::VARIAVEL_X);
 }

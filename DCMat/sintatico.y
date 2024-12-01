@@ -137,7 +137,7 @@ calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
             | PLOT PNT_VIRG
             | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
             | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG        { dcmat->showRpnExpression($3); }
-            | expressao                                     
+            | expressao                                     { dcmat->showExpression($1); }                      
             ;
 
 // Em ordem de precedência (da menor prioridade para a maior)

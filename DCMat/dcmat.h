@@ -30,6 +30,7 @@ private:
 
     // Flags
     bool flagErro;
+    bool flagUndefined;
 
     // Configurações do dcmat
     Limites h_view;
@@ -61,6 +62,26 @@ private:
     */
     void showErrorMessage(string message);
 
+    /******************************************************
+    *       EXPRESSÕES
+    *******************************************************/
+    
+    /**
+     * @brief Calcula o valor de uma árvore de expressão
+     * @param root O endereço do nó raiz da árvore
+     * @param variableX Indica se valor da variável x deve
+     * ser calculado junto
+     * @param xValue O valor da variável x
+     * @return O valor calculado
+     */
+    double calculateValue(NodeArvore *root, bool variableX, double xValue);
+
+   /**
+    * @brief Mostra um valor formatado
+    * @param value O valor a ser mostrado
+    */
+    void showValue(double value);
+    
     /******************************************************
     *       MATRIZ
     *******************************************************/
@@ -102,7 +123,7 @@ private:
      * @return O valor do determinante
      */
     double calculateDeterminant();
-    
+
     /******************************************************
     *       SÍMBOLOS E DECLARAÇÕES
     *******************************************************/
@@ -113,6 +134,14 @@ private:
      * @return Se o símbolo existe ou não
      */
     bool symbolExists(string name);
+
+    /**
+     * @brief Verifica se a variável X está presente na 
+     * árvore da expressão
+     * @param root O endereço do nó raíz 
+     * @return Se está presente ou não
+     */
+    bool isXVariablePresent(NodeArvore *root);
 
 public:
     // Construtor
@@ -191,21 +220,23 @@ public:
      * @brief Redefine as configurações padrão
      */
     void resetSettings();
-    
-    /******************************************************
-    *       CALCULAR VALORES
-    *******************************************************/
 
-   /**
-    * @brief Mostra o valor da expressão
-    */
-    void showValue(double value);
-    
     /******************************************************
     *       EXPRESSÕES
     *******************************************************/
 
-    void showRpnExpression(NodeArvore *node);
+    /**
+     * @brief Mostra em formato RPN uma árvore de expressão
+     * @param root O endereço do nó raiz da árvore
+     */
+    void showRpnExpression(NodeArvore *root);
+
+    /**
+     * @brief Mostra o valor calculado de uma árvore 
+     * de expressão
+     * @param root O endereço do nó raiz da árvore
+     */
+    void showExpression(NodeArvore *root);
 
     /******************************************************
     *       MATRIZ

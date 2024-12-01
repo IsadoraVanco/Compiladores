@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <stack>
 #include "ast.h"
 
 using std::cout;
@@ -196,4 +197,37 @@ void showPostOrder(NodeArvore *node, int float_precision)
     default:
         break;
     }
+}
+
+/******************************************************
+*       ENCONTRAR VALORES
+*******************************************************/
+
+bool findElement(NodeArvore *node, TipoElemento type)
+{
+    if(!node){
+        return false;
+    }
+
+    std::stack<NodeArvore*> pilha;
+    pilha.push(node);
+
+    while(!pilha.empty()){
+        NodeArvore* atual = pilha.top();
+        pilha.pop();
+
+        if(atual->tipo == type){
+            return true;
+        }
+
+        if(atual->direita != NULL) {
+            pilha.push(atual->direita);
+        }
+
+        if(atual->esquerda != NULL) {
+            pilha.push(atual->esquerda);
+        }
+    }
+
+    return false;
 }

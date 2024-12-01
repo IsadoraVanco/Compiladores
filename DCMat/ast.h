@@ -115,4 +115,16 @@ void freeNodes(NodeArvore *root);
  */
 void showPostOrder(NodeArvore *node, int float_precision);
 
+/******************************************************
+*       ENCONTRAR VALORES
+*******************************************************/
+
+/**
+ * @brief Encontra um elemento na árvore
+ * @param node O endereço do nó raiz
+ * @param type O tipo do elemento procurado
+ * @return Se encontrou ou não
+ */
+bool findElement(NodeArvore *node, TipoElemento type);
+
 #endif
