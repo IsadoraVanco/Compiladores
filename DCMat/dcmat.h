@@ -31,6 +31,7 @@ private:
     // Flags
     bool flagErro;
     bool flagUndefined;
+    bool flagInf;
 
     // Configurações do dcmat
     Limites h_view;
@@ -62,6 +63,12 @@ private:
     */
     void showErrorMessage(string message);
 
+    /**
+     * @brief Altera o valor das flags de erros
+     * @param status O valor das flags
+     */
+    void setAllErrorFlags(bool status);
+
     /******************************************************
     *       EXPRESSÕES
     *******************************************************/
@@ -72,9 +79,12 @@ private:
      * @param variableX Indica se valor da variável x deve
      * ser calculado junto
      * @param xValue O valor da variável x
+     * @param id Indica se o valor de um id deve ser utilizado
+     * @param idName O nome da variável
+     * @param idValue O valor do id que deve ser usado
      * @return O valor calculado
      */
-    double calculateValue(NodeArvore *root, bool variableX, double xValue);
+    double calculateValue(NodeArvore *root, bool variableX, double xValue, bool id, string idName, double idValue);
 
    /**
     * @brief Mostra um valor formatado
@@ -224,6 +234,17 @@ public:
     /******************************************************
     *       EXPRESSÕES
     *******************************************************/
+
+   /**
+    * @brief Calcula o valor de um somatório
+    * @param root O endereço do nó raiz da árvore
+    * @param limits Os valores de limites do somatório
+    * @param xVariable Indica se a variável X está presente 
+    * como variável
+    * @param id O identificador da variável do somatório, caso 
+    * a variável X não seja utilizada
+    */
+    void calculateSum(NodeArvore *root, Limites *limits, bool xVariable, string id);
 
     /**
      * @brief Mostra em formato RPN uma árvore de expressão

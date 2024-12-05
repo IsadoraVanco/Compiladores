@@ -14,8 +14,7 @@ DCMat::DCMat()
     matrix = nullptr;
     matrixTemp = createMatrix();
 
-    flagErro = false;
-    flagUndefined = false;
+    setAllErrorFlags(false);
 }
 
 // Desconstrutor
@@ -94,6 +93,13 @@ void DCMat::setConnectDots(bool state)
 *       CONFIGURAÇÕES
 *******************************************************/
 
+void DCMat::setAllErrorFlags(bool status)
+{
+    flagErro = status;
+    flagUndefined = status;
+    flagInf = status;
+}
+
 void DCMat::showErrorMessage(string message)
 {
     cout << "\nERROR: " << message << "\n\n";
@@ -105,6 +111,7 @@ void DCMat::showError(Erro error)
     {
     case Erro::DividedByZero:
         cout << "\ninf";
+        flagInf = true;
         break;
 
     case Erro::VariableX:
@@ -113,6 +120,7 @@ void DCMat::showError(Erro error)
 
     case Erro::UndefinedSymbol:
         cout << "\nUndefined symbol";
+        flagUndefined = true;
         break;
 
     case Erro::NoMatrix:
@@ -130,6 +138,7 @@ void DCMat::showError(Erro error)
     default:
         break;
     }
+    flagErro = true;
 }
 
 void DCMat::showAbout()
@@ -173,7 +182,46 @@ void DCMat::resetSettings()
 *       EXPRESSÕES
 *******************************************************/
 
-double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue)
+void DCMat::calculateSum(NodeArvore *root, Limites *limits, bool xVariable, string id)
+{
+    // Verifica os limites
+    double superior = limits->high;
+    double inferior = limits->low;
+    double total = 0;
+
+    if(limits->high < limits->low){
+        superior = limits->low;
+        inferior = limits->high;
+    }
+
+    int i = inferior; 
+    if(xVariable){
+        for(i; i <= superior; i++){
+            total += calculateValue(root, true, i, false, "", 0);
+            if(flagUndefined || flagInf){
+                break;
+            }
+        }
+    }else{
+        for(i; i <= superior; i++){
+            total += calculateValue(root, false, 0, true, id, i);
+            if(flagUndefined || flagInf){
+                // cout << "chegaaaaa\n";
+                break;
+            }
+        }
+
+        if(!flagErro && !flagUndefined){
+            addSymbol(id, Tipo::FLOAT, total);
+        }else{
+            setAllErrorFlags(false);
+        }
+    }
+
+    freeNodes(root);
+}
+
+double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue, bool id, string idName, double idValue)
 {
     if(!root){
         return 0.0;
@@ -183,7 +231,7 @@ double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue)
     {
         case TipoElemento::FUNCAO: 
         {
-            double valor = calculateValue(root->esquerda, variableX, xValue);
+            double valor = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
             
             if(root->id == "SEN"){
                 return std::sin(valor);
@@ -194,75 +242,84 @@ double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue)
             }else if (root->id == "ABS"){
                 return std::abs(valor);
             }
-            break;
         }
         case TipoElemento::OPERADOR: 
         {
-            double valorDir = calculateValue(root->direita, variableX, xValue);
+            double valorDir = calculateValue(root->direita, variableX, xValue, id, idName, idValue);
 
             if(root->id == "+"){
-                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
                 return valorEsq + valorDir;
             }else if (root->id == "-"){
-                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
                 return valorEsq - valorDir;
             }else if (root->id == "*"){
-                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
                 return valorEsq * valorDir;
             }else if (root->id == "/"){
-                if (valorDir != 0) {
-                    double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                if(valorDir != 0){
+                    double valorEsq = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
                     return valorEsq / valorDir;
                 }else{
-                    flagErro = true;
-                    showError(Erro::DividedByZero);
+                    if(!flagInf && !flagUndefined){
+                        // flagErro = true;
+                        showError(Erro::DividedByZero);
+                    }
                     return 0.0;
                 }
             }else if(root->id == "%"){
                 if(valorDir != 0){
-                    double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                    double valorEsq = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
                     return std::fmod(valorEsq, valorDir);
                 }else{
-                    flagErro = true;
+                    // flagErro = true;
                     showError(Erro::DividedByZero);
                     return 0.0;
                 }
             }else if (root->id == "^"){
-                double valorEsq = calculateValue(root->esquerda, variableX, xValue);
+                double valorEsq = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
                 return std::pow(valorEsq, valorDir);
             }
-            break;
         }
         case TipoElemento::UNARIO: 
         {
-            double valor = calculateValue(root->esquerda, variableX, xValue);
+            double valor = calculateValue(root->esquerda, variableX, xValue, id, idName, idValue);
             
             if(root->id == "-"){
                 return -valor;
+            }else{
+                return valor;
             }
-            return valor;
         }
         case TipoElemento::IDENTIFICADOR: 
         {
             if(!flagErro){
-                return getSymbol(root->id);
+                if(id && root->id == idName){
+                    return idValue;
+                }else{
+                    return getSymbol(root->id);
+                }
+            }else{
+                return 0.0;
             }
-            return 0.0;
         }
         case TipoElemento::VARIAVEL_X: 
         {
             if(variableX){
                 return xValue;
+            }else{
+                flagErro = true;
+                return 0.0;
             }
-            flagErro = true;
-            return 0.0;
         }
         case TipoElemento::CONSTANTE: 
         {
             return root->numero;
         }
         default:
-            break;
+            cout << "\n?";
+            flagErro = true; 
+            return 0.0;
     }
 }
 
@@ -271,8 +328,8 @@ void DCMat::showValue(double value)
     if(!flagErro && !flagUndefined){
         cout << "\n" << fixed << std::setprecision(float_precision) << value;
     }
-    flagErro = false;
-    flagUndefined = false;
+    
+    setAllErrorFlags(false);
 }   
 
 void DCMat::showRpnExpression(NodeArvore *root)
@@ -287,7 +344,7 @@ void DCMat::showExpression(NodeArvore *root)
     if(isXVariablePresent(root)){
         showError(Erro::VariableX);
     }else{
-        double valor = calculateValue(root, false, 0);
+        double valor = calculateValue(root, false, 0, false, "", 0);
         showValue(valor);
     }
 
@@ -415,11 +472,11 @@ Matriz* DCMat::createMatrix()
 void DCMat::resizeColumns(Matriz *matriz, int columns)
 {
     if(columns > maxMatrix){
+        // flagErro = true;
         showError(Erro::MatrixLimits);
         
         delete matrixTemp;
         matrixTemp = createMatrix();
-        flagErro = true;
     }else{
         for (auto& linha : matriz->matriz) {
             linha.resize(columns, 0);
@@ -433,11 +490,11 @@ void DCMat::resizeColumns(Matriz *matriz, int columns)
 void DCMat::resizeRows(Matriz *matriz, int rows)
 {
     if(rows > maxMatrix){
+        // flagErro = true;
         showError(Erro::MatrixLimits);
         
         delete matrixTemp;
         matrixTemp = createMatrix();
-        flagErro = true;
     }else{
         matriz->matriz.resize(rows, vector<double>(matriz->colunas, 0));
         matriz->linhas = rows;
@@ -490,7 +547,8 @@ void DCMat::addRowMatrix()
 void DCMat::addMatrix()
 {
     if(flagErro){
-        flagErro = false;
+        // flagErro = false;
+        setAllErrorFlags(false);
         return;
     }
 
@@ -581,6 +639,8 @@ void DCMat::solveDeterminant()
             showValue(calculateDeterminant());
         }
     }
+
+    setAllErrorFlags(false);
 }
 
 void DCMat::solveLinearSystem()
@@ -659,6 +719,8 @@ void DCMat::solveLinearSystem()
             }
         }
     }
+
+    setAllErrorFlags(false);
 }
 
 /******************************************************
@@ -701,6 +763,8 @@ void DCMat::showSymbol(string name)
     }else{
         showError(Erro::UndefinedSymbol);
     }
+
+    setAllErrorFlags(false);
 }
 
 double DCMat::getSymbol(string name)
@@ -709,6 +773,7 @@ double DCMat::getSymbol(string name)
         return symbols[name].valor;
     }else{
         cout << "\nUndefined symbol [" << name << "]";
+        flagErro = true;
         flagUndefined = true;
         return 0;
     }
@@ -739,7 +804,8 @@ void DCMat::addSymbol(string name, Tipo type, double value)
             cout << "\n\n";
         }
     }
-    flagErro = false;
+    // flagErro = false;
+    setAllErrorFlags(false);
 }
 
 bool DCMat::symbolExists(string name)
