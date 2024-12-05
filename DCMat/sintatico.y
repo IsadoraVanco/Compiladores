@@ -129,16 +129,16 @@ simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { free($1); }
             | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
             ;
 
-calcula     : INTEGRATE PRT_ESQ limites VIRGULA funcao PRT_DIR PNT_VIRG
-            | SUM PRT_ESQ IDENTIFIER VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, false, $3); free($3); }
+calcula     : SUM PRT_ESQ IDENTIFIER VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, false, $3); free($3); }
             | SUM PRT_ESQ VARIAVEL_X VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, true, ""); }
+            | INTEGRATE PRT_ESQ limites VIRGULA expressao PRT_DIR PNT_VIRG                  { dcmat->calculateIntegral(limites, $5); }
             | SOLVE DETERMINANT PNT_VIRG                    { dcmat->solveDeterminant(); }
             | SOLVE LINEAR_SYS PNT_VIRG                     { dcmat->solveLinearSystem(); }
             | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
-            | PLOT PNT_VIRG
-            | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
             | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG        { dcmat->showRpnExpression($3); }
             | expressao                                     { dcmat->showExpression($1); }                      
+            | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
+            | PLOT PNT_VIRG
             ;
 
 // Em ordem de precedência (da menor prioridade para a maior)

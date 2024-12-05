@@ -323,6 +323,37 @@ double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue, bo
     }
 }
 
+void DCMat::calculateIntegral(Limites *limits, NodeArvore *root)
+{
+    if(limits->low > limits->high){
+        cout << "\nERROR: lower limit must be smaller than upper limit";
+    }else{
+        double total = 0;
+        double intervalo = (limits->high - limits->low) / integral_steps;
+        double i = limits->low + intervalo;
+        // cout << "\nintervalo: " << intervalo;
+
+        while(i < limits->high)
+        {  
+            total += calculateValue(root, true, i, false, "", 0);
+            i += intervalo;
+            if(flagErro){
+                // cout << "\ndeu por hoje";
+                break;
+            }
+        }
+
+        total *= intervalo;
+
+        if(!flagErro){
+            showValue(total);
+        }
+    }
+
+    setAllErrorFlags(false);
+    freeNodes(root);
+}
+
 void DCMat::showValue(double value)
 {
     if(!flagErro && !flagUndefined){

@@ -247,6 +247,14 @@ public:
     void calculateSum(NodeArvore *root, Limites *limits, bool xVariable, string id);
 
     /**
+     * @brief Calcula o valor de uma integral utilizando 
+     * Soma de Riemann
+     * @param limits Os valores dos limites
+     * @param root O endereço da raíz da árvore
+     */
+    void calculateIntegral(Limites *limits, NodeArvore *root);
+
+    /**
      * @brief Mostra em formato RPN uma árvore de expressão
      * @param root O endereço do nó raiz da árvore
      */
