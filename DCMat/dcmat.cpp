@@ -14,6 +14,7 @@ DCMat::DCMat()
     matrix = nullptr;
     matrixTemp = createMatrix();
 
+    flagChangedAxis = true;
     setAllErrorFlags(false);
 }
 
@@ -24,6 +25,11 @@ DCMat::~DCMat()
 
     if(matrix != nullptr){
         delete matrix;
+    }
+
+    // Todas as funções guardadas
+    for(int i = 0; i < functions.size(); i++){
+        freeNodes(functions[i]);
     }
 
     // Todos as matrizes da lista de simbolos
@@ -40,8 +46,13 @@ void DCMat::setHView(double low, double high)
         showErrorMessage("h_view_lo must be smaller than h_view_hi");
         // cout << low << high;
     }else{
-        h_view.high = high;
-        h_view.low = low;
+        if(graphics.h_view.high != high ||
+            graphics.h_view.low != low){
+            flagChangedAxis = true;
+
+            graphics.h_view.high = high;
+            graphics.h_view.low = low;
+        }
     }
 }
 
@@ -51,8 +62,13 @@ void DCMat::setVView(double low, double high)
         showErrorMessage("v_view_lo must be smaller than v_view_hi");
         // cout << low << high;
     }else{
-        v_view.high = high;
-        v_view.low = low;
+        if(graphics.v_view.high != high ||
+            graphics.v_view.low != low){
+            flagChangedAxis = true;
+
+            graphics.v_view.high = high;
+            graphics.v_view.low = low;
+        }
     }
 }
 
@@ -76,17 +92,18 @@ void DCMat::setIntegralSteps(int steps)
 
 void DCMat::setDrawAxis(bool state)
 {
-    draw_axis = state;
+    graphics.draw_axis = state;
+    flagChangedAxis = true;
 }
 
 void DCMat::setErasePlot(bool state)
 {
-    erase_plot = state;
+    graphics.erase_plot = state;
 }
 
 void DCMat::setConnectDots(bool state)
 {
-    connect_dots = state;
+    graphics.connect_dots = state;
 }
 
 /******************************************************
@@ -153,29 +170,29 @@ void DCMat::showAbout()
 
 void DCMat::showSettings()
 {
-    cout << "\nh_view_lo: " << fixed << std::setprecision(6) << h_view.low;
-    cout << "\nh_view_hi: " << fixed << std::setprecision(6) << h_view.high;
-    cout << "\nv_view_lo: " << fixed << std::setprecision(6) << v_view.low;
-    cout << "\nv_view_hi: " << fixed << std::setprecision(6) << v_view.high;
+    cout << "\nh_view_lo: " << fixed << std::setprecision(6) << graphics.h_view.low;
+    cout << "\nh_view_hi: " << fixed << std::setprecision(6) << graphics.h_view.high;
+    cout << "\nv_view_lo: " << fixed << std::setprecision(6) <<graphics.v_view.low;
+    cout << "\nv_view_hi: " << fixed << std::setprecision(6) <<graphics.v_view.high;
     cout << "\nfloat_precision: " <<  float_precision;
     cout << "\nintegral_steps: " << integral_steps;
     
-    cout << "\n\nDraw Axis: " << (draw_axis ? "ON" : "OFF");
-    cout << "\nErase Plot: " << (erase_plot ? "ON" : "OFF");
-    cout << "\nConnect Dots: " << (connect_dots ? "ON" : "OFF");
+    cout << "\n\nDraw Axis: " << (graphics.draw_axis ? "ON" : "OFF");
+    cout << "\nErase Plot: " << (graphics.erase_plot ? "ON" : "OFF");
+    cout << "\nConnect Dots: " << (graphics.connect_dots ? "ON" : "OFF");
 }
 
 void DCMat::resetSettings()
 {
-    h_view.low = -6.5;
-    h_view.high = 6.5;
-    v_view.low = -3.5;
-    v_view.high = 3.5;
+    graphics.h_view.low = -6.5;
+    graphics.h_view.high = 6.5;
+    graphics.v_view.low = -3.5;
+    graphics.v_view.high = 3.5;
     float_precision = 6;
     integral_steps = 1000;
-    draw_axis = true;
-    erase_plot = true;
-    connect_dots = false;
+    graphics.draw_axis = true;
+    graphics.erase_plot = true;
+    graphics.connect_dots = false;
 }
 
 /******************************************************
@@ -380,6 +397,103 @@ void DCMat::showExpression(NodeArvore *root)
     }
 
     freeNodes(root);
+}
+
+void DCMat::eraseFunctions()
+{
+    if(functions.size() > 1){
+        NodeArvore* ultimaFuncao = functions.back();
+
+        // Limpa os nós das funções
+        int i = 0;
+        for(i; i < functions.size() - 1; i++){
+            freeNodes(functions[i]);
+        }
+        
+        functions.erase(functions.begin(), functions.end() - 1);
+        std::swap(functions.front(), functions.back());
+    }
+}
+
+void DCMat::calculatePoints(NodeArvore *root)
+{
+    if(root != nullptr){
+        int i = 0;
+        double valorX = graphics.h_view.low;
+
+        for(i; i < LARGURA_TELA; i++){
+            double valorY = calculateValue(root, true, valorX, false, "", 0);
+            // cout << "\nvalor calculado: " << valorX << "," << valorY;
+
+            if(flagUndefined){
+                break;
+            }
+
+            if(valorY <= graphics.h_view.high && valorY >= graphics.h_view.low){
+                definePoint(&graphics, valorX, valorY);
+            }
+
+            valorX += graphics.deltaX;
+        }
+    }
+}
+
+void DCMat::plotFunction(NodeArvore *root)
+{
+    bool novo = false;
+
+    // Mostra a última função definida
+    if(!root){
+        if(functions.size() <= 0){
+            cout << "\nNo function defined!";
+            return;
+        }else{
+            if(flagChangedAxis ||
+                graphics.erase_plot){
+                
+                clearScreen(&graphics);
+
+                if(graphics.erase_plot){
+                    eraseFunctions();
+                }
+
+                // Configura os pontos denovo  
+                for(auto& funcao: functions){
+                    calculatePoints(funcao);
+                }      
+            }
+        }
+    }else{
+        functions.push_back(root);
+        novo = true;
+        // cout << "\nfunções: " << functions.size();
+    }
+
+    if(flagChangedAxis ||
+        graphics.erase_plot){
+        
+        clearScreen(&graphics);
+
+        if(graphics.erase_plot){
+            eraseFunctions();
+        }
+        
+        novo = true;
+    }
+
+    if(novo){
+        // Configura os pontos denovo 
+        int i = 0; 
+        for(i; i < functions.size(); i++){
+            calculatePoints(functions[i]);
+        }      
+    }
+
+    if(!flagUndefined){
+        showScreen(&graphics);
+    }
+    setAllErrorFlags(false);
+    flagChangedAxis = false;
 }
 
 /******************************************************

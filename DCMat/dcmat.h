@@ -2,6 +2,7 @@
 #define _DCMAT_H_
 
 #include "types.h"
+#include "graphics.h"
 #include "ast.h"
 #include <string>
 #include <unordered_map>
@@ -32,15 +33,12 @@ private:
     bool flagErro;
     bool flagUndefined;
     bool flagInf;
+    bool flagChangedAxis;
 
     // Configurações do dcmat
-    Limites h_view;
-    Limites v_view;
     int float_precision;
     int integral_steps;
-    bool draw_axis;
-    bool erase_plot;
-    bool connect_dots;
+    Grafico graphics;
 
     // Variáveis e definições
     Matriz *matrix;
@@ -50,6 +48,8 @@ private:
 
     Matriz matrixL;
     Matriz matrixU;
+
+    vector<NodeArvore *> functions;
 
     unordered_map<string, Variavel> symbols;
 
@@ -91,6 +91,19 @@ private:
     * @param value O valor a ser mostrado
     */
     void showValue(double value);
+
+    /**
+     * @brief Limpa as funções definidas, mantendo apenas
+     * a última salva
+     */
+    void eraseFunctions();
+
+    /**
+     * @brief Calcula os pontos de uma função
+     * @param root O endereço da raíz da árvore de expressão
+     */
+    void calculatePoints(NodeArvore *root);
+
     
     /******************************************************
     *       MATRIZ
@@ -266,6 +279,13 @@ public:
      * @param root O endereço do nó raiz da árvore
      */
     void showExpression(NodeArvore *root);
+
+    /**
+     * @brief Mostra o gráfico de uma função
+     * @param root O endereço do nó da raíz da árvore 
+     * de expressão
+     */
+    void plotFunction(NodeArvore *root);
 
     /******************************************************
     *       MATRIZ

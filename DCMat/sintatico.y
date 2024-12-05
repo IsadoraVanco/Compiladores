@@ -132,13 +132,13 @@ simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addFloatSym
 calcula     : SUM PRT_ESQ IDENTIFIER VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, false, $3); free($3); }
             | SUM PRT_ESQ VARIAVEL_X VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, true, ""); }
             | INTEGRATE PRT_ESQ limites VIRGULA expressao PRT_DIR PNT_VIRG                  { dcmat->calculateIntegral(limites, $5); }
+            | PLOT PRT_ESQ expressao PRT_DIR PNT_VIRG       { dcmat->plotFunction($3); }
+            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG        { dcmat->showRpnExpression($3); }
             | SOLVE DETERMINANT PNT_VIRG                    { dcmat->solveDeterminant(); }
             | SOLVE LINEAR_SYS PNT_VIRG                     { dcmat->solveLinearSystem(); }
             | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
-            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG        { dcmat->showRpnExpression($3); }
+            | PLOT PNT_VIRG                                 { dcmat->plotFunction(nullptr); }
             | expressao                                     { dcmat->showExpression($1); }                      
-            | PLOT PRT_ESQ funcao PRT_DIR PNT_VIRG
-            | PLOT PNT_VIRG
             ;
 
 // Em ordem de precedência (da menor prioridade para a maior)
