@@ -125,7 +125,7 @@ simbSemRtn  : IDENTIFIER ATRIBUICAO matriz PNT_VIRG     { dcmat->addSymbol($1, T
             | SHOW SYMBOLS PNT_VIRG                     { dcmat->showAllSymbols(); }
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { free($1); }
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addFloatSymbol($1, $3); free($1); }
             | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
             ;
 

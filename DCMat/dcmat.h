@@ -328,6 +328,14 @@ public:
     double getSymbol(string name);
 
     /**
+     * @brief Adiciona um símbolo do tipo Float na tabela
+     * de símbolos
+     * @param name O nome do símbolo
+     * @param root O endereço da raíz da árvore da expressão
+     */
+    void addFloatSymbol(string name, NodeArvore* root);
+
+    /**
      * @brief Adiciona um símbolo na lista
      * @param name O nome do símbolo
      * @param type O tipo do símbolo

@@ -810,6 +810,18 @@ double DCMat::getSymbol(string name)
     }
 }
 
+void DCMat::addFloatSymbol(string name, NodeArvore* root)
+{
+    if(isXVariablePresent(root)){
+        showError(Erro::VariableX);
+    }else{
+        double valor = calculateValue(root, false, 0, false, "", 0);
+        addSymbol(name, Tipo::FLOAT, valor);
+    }
+
+    freeNodes(root);
+}
+
 void DCMat::addSymbol(string name, Tipo type, double value)
 {
     if(!flagErro){
