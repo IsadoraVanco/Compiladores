@@ -4,8 +4,8 @@ PROJETO = dcmat
 # ******** ARQUIVOS **********************************
 
 # Arquivos c/c++
-CXX_SRCS = main.cpp dcmat.cpp ast.cpp
-CXX_HEADERS = dcmat.h types.h ast.h
+CXX_SRCS = main.cpp dcmat.cpp ast.cpp graphics.cpp
+CXX_HEADERS = dcmat.h types.h ast.h graphics.h
 
 # Arquivos flex
 LEX_SRCS = lexico.l
@@ -15,6 +15,9 @@ LEX_GNRT = lex.yy.c
 BIS_SRCS = sintatico.y
 BIS_GNRT = sintatico.tab.c
 BIS_OUT = tokens.h
+
+# Arquivos extras
+MAKEFILE = Makefile
 
 # ******** COMPILADORES E FLAGS **********************************
 
@@ -51,7 +54,7 @@ $(BIS_GNRT): $(BIS_SRCS)
 
 # Limpa os arquivos gerados
 clean:
-	rm -f $(PROJETO) $(LEX_GNRT) $(BIS_GNRT) $(BIS_OUT) *.o
+	rm -f $(PROJETO) $(LEX_GNRT) $(BIS_GNRT) $(BIS_OUT) *.o $(PROJETO).zip
 
 # Limpa o terminal e roda o código
 run: $(PROJETO)
@@ -62,3 +65,7 @@ run: $(PROJETO)
 valgrind: $(PROJETO)
 	clear
 	valgrind --leak-check=full --show-leak-kinds=all ./$(PROJETO)
+
+# Compactar o projeto em um arquivo ZIP
+zip:
+	zip $(PROJETO).zip $(CXX_SRCS) $(CXX_HEADERS) $(LEX_SRCS) $(BIS_SRCS) $(MAKEFILE)
