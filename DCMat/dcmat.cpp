@@ -310,7 +310,7 @@ double DCMat::calculateValue(NodeArvore *root, bool variableX, double xValue, bo
         }
         case TipoElemento::IDENTIFICADOR: 
         {
-            if(!flagErro){
+            if(!flagInf){
                 if(id && root->id == idName){
                     return idValue;
                 }else{
