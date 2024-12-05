@@ -10,6 +10,9 @@ using std::cout;
 using std::endl;
 
 extern int yytext;
+extern struct nodeArvore *nodeLeitura;
+extern bool erroLexico;
+extern bool erroSintatico;
 
 // Tipos de erros
 enum {TOKEN_INESPERADO, TOKEN_FALTANTE};
@@ -59,34 +62,40 @@ int emitirErroSintatico(int erro);
 %start inicial
 %%
 
-inicial     : configSemRtn NOVA_LINHA   { /*cout << "config sem retorno\n";*/ return SUCESSO; }
-            | config NOVA_LINHA         { /*cout << "config\n";*/ return separarComandos(); }
-            | simbSemRtn NOVA_LINHA     { /*cout << "simbolos sem retorno\n";*/ return SUCESSO; }
-            | simbolos NOVA_LINHA       { /*cout << "simbolos\n";*/ return separarComandos(); }
-            | calcula NOVA_LINHA        { /*cout << "calcula\n";*/ return separarComandos(); }
+inicial     : configSemRtn              { /*cout << "config sem retorno\n";*/ return SUCESSO; }
+            | config                    { /*cout << "config\n";*/ return separarComandos(); }
+            | simbSemRtn                { /*cout << "simbolos sem retorno\n";*/ return SUCESSO; }
+            | simbolos                  { /*cout << "simbolos\n";*/ return separarComandos(); }
+            | calcula                   { /*cout << "calcula\n";*/ return separarComandos(); }
             | NOVA_LINHA                { return SUCESSO; }
             | QUIT NOVA_LINHA           { return FIM; }
-            | error                     { /*cout << "ERRROOOOO\n";*/ return FIM; }
-            | ERRO error                { /*cout << "?\n";*/ return FIM; }
-            | ERRO                      { /*cout << "ERRO do Lexico\n";*/ return SUCESSO; }
+            | erros                     { erroSintatico = false; erroLexico = false; return SUCESSO; }
             ;
 
-config      : ABOUT PNT_VIRG                        { dcmat->showAbout(); }
-            | SHOW SETTINGS PNT_VIRG                { dcmat->showSettings(); }
+erros       : ERRO                      { /*cout << "\nlex ";*/ }                
+            | ERRO erros                { /*cout << "\nlex+ ";*/ }
+            | ERRO NOVA_LINHA           { /*cout << "\nlex nl ";*/ }
+            | error erros               { /*cout << "\nerro+ ";*/}
+            | error NOVA_LINHA          { /*cout << "\nerro nl";*/ emitirErroSintatico(TOKEN_FALTANTE); }
+            | error                     { /*cout << "\nQUAL ERRO";*/ emitirErroSintatico(TOKEN_INESPERADO); }
             ;
 
-configSemRtn: RESET SETTINGS PNT_VIRG               { dcmat->resetSettings(); }
-            | SET AXIS ON PNT_VIRG                  { dcmat->setDrawAxis(true); }
-            | SET AXIS OFF PNT_VIRG                 { dcmat->setDrawAxis(false); }
-            | SET ERASE PLOT ON PNT_VIRG            { dcmat->setErasePlot(true); }
-            | SET ERASE PLOT OFF PNT_VIRG           { dcmat->setErasePlot(false); }
-            | SET DOTS ON PNT_VIRG                  { dcmat->setConnectDots(true); }
-            | SET DOTS OFF PNT_VIRG                 { dcmat->setConnectDots(false); }
-            | SET FLOAT PRECISION inteiro PNT_VIRG  { dcmat->setFloatPrecision($4); }
-            | SET INTEGRAL_STEPS inteiro PNT_VIRG   { dcmat->setIntegralSteps($3); }
-            | SET H_VIEW limites PNT_VIRG           { dcmat->setHView(limites->low, limites->high); }
-            | SET V_VIEW limites PNT_VIRG           { dcmat->setVView(limites->low, limites->high); }
-            | MATRIX IGUAL matriz PNT_VIRG          { dcmat->addMatrix(); }
+config      : ABOUT PNT_VIRG NOVA_LINHA             { dcmat->showAbout(); }
+            | SHOW SETTINGS PNT_VIRG NOVA_LINHA     { dcmat->showSettings(); }
+            ;
+
+configSemRtn: RESET SETTINGS PNT_VIRG NOVA_LINHA        { dcmat->resetSettings(); }
+            | SET AXIS ON PNT_VIRG NOVA_LINHA           { dcmat->setDrawAxis(true); }
+            | SET AXIS OFF PNT_VIRG NOVA_LINHA          { dcmat->setDrawAxis(false); }
+            | SET ERASE PLOT ON PNT_VIRG NOVA_LINHA     { dcmat->setErasePlot(true); }
+            | SET ERASE PLOT OFF PNT_VIRG NOVA_LINHA    { dcmat->setErasePlot(false); }
+            | SET DOTS ON PNT_VIRG NOVA_LINHA           { dcmat->setConnectDots(true); }
+            | SET DOTS OFF PNT_VIRG NOVA_LINHA          { dcmat->setConnectDots(false); }
+            | SET FLOAT PRECISION inteiro PNT_VIRG NOVA_LINHA   { dcmat->setFloatPrecision($4); }
+            | SET INTEGRAL_STEPS inteiro PNT_VIRG NOVA_LINHA    { dcmat->setIntegralSteps($3); }
+            | SET H_VIEW limites PNT_VIRG NOVA_LINHA            { dcmat->setHView(limites->low, limites->high); }
+            | SET V_VIEW limites PNT_VIRG NOVA_LINHA            { dcmat->setVView(limites->low, limites->high); }
+            | MATRIX IGUAL matriz PNT_VIRG NOVA_LINHA           { dcmat->addMatrix(); }
             ;
 
 limites     : numero DOIS_PONTOS numero   { limites->low = $1; limites->high = $3; }
@@ -121,68 +130,68 @@ valores     : numero                         { dcmat->addColumnMatrix($1); }
             | valores VIRGULA numero         { dcmat->addColumnMatrix($3); }
             ;
 
-simbSemRtn  : IDENTIFIER ATRIBUICAO matriz PNT_VIRG     { dcmat->addSymbol($1, Tipo::MATRIX, 0); free($1); }
-            | SHOW SYMBOLS PNT_VIRG                     { dcmat->showAllSymbols(); }
+simbSemRtn  : IDENTIFIER ATRIBUICAO matriz PNT_VIRG NOVA_LINHA  { dcmat->addSymbol($1, Tipo::MATRIX, 0); free($1); }
+            | SHOW SYMBOLS PNT_VIRG NOVA_LINHA                  { dcmat->showAllSymbols(); }
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG      { dcmat->addFloatSymbol($1, $3); free($1); }
-            | SHOW MATRIX PNT_VIRG                          { dcmat->showMatrix(nullptr); }
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG NOVA_LINHA   { dcmat->addFloatSymbol($1, $3); free($1); }
+            | SHOW MATRIX PNT_VIRG NOVA_LINHA                       { dcmat->showMatrix(nullptr); }
             ;
 
-calcula     : SUM PRT_ESQ IDENTIFIER VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, false, $3); free($3); }
-            | SUM PRT_ESQ VARIAVEL_X VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG     { dcmat->calculateSum($7, limites, true, ""); }
-            | INTEGRATE PRT_ESQ limites VIRGULA expressao PRT_DIR PNT_VIRG                  { dcmat->calculateIntegral(limites, $5); }
-            | PLOT PRT_ESQ expressao PRT_DIR PNT_VIRG       { dcmat->plotFunction($3); }
-            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG        { dcmat->showRpnExpression($3); }
-            | SOLVE DETERMINANT PNT_VIRG                    { dcmat->solveDeterminant(); }
-            | SOLVE LINEAR_SYS PNT_VIRG                     { dcmat->solveLinearSystem(); }
-            | IDENTIFIER PNT_VIRG                           { dcmat->showSymbol($1); free($1); } 
-            | PLOT PNT_VIRG                                 { dcmat->plotFunction(nullptr); }
-            | expressao                                     { dcmat->showExpression($1); }                      
+calcula     : SUM PRT_ESQ IDENTIFIER VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG NOVA_LINHA  { dcmat->calculateSum($7, limites, false, $3); free($3); }
+            | SUM PRT_ESQ VARIAVEL_X VIRGULA limites VIRGULA expressao PRT_DIR PNT_VIRG NOVA_LINHA  { dcmat->calculateSum($7, limites, true, ""); }
+            | INTEGRATE PRT_ESQ limites VIRGULA expressao PRT_DIR PNT_VIRG NOVA_LINHA               { dcmat->calculateIntegral(limites, $5); }
+            | PLOT PRT_ESQ expressao PRT_DIR PNT_VIRG NOVA_LINHA    { dcmat->plotFunction($3); }
+            | RPN PRT_ESQ expressao PRT_DIR PNT_VIRG NOVA_LINHA     { dcmat->showRpnExpression($3); }
+            | SOLVE DETERMINANT PNT_VIRG NOVA_LINHA                 { dcmat->solveDeterminant(); }
+            | SOLVE LINEAR_SYS PNT_VIRG NOVA_LINHA                  { dcmat->solveLinearSystem(); }
+            | IDENTIFIER PNT_VIRG NOVA_LINHA                        { dcmat->showSymbol($1); free($1); } 
+            | PLOT PNT_VIRG NOVA_LINHA                              { dcmat->plotFunction(nullptr); }
+            | expressao NOVA_LINHA                                  { dcmat->showExpression($1); }                      
             ;
 
 // Em ordem de precedência (da menor prioridade para a maior)
-expressao   : exPrioM                           { $$ = $1; }
+expressao   : exPrioM                           { $$ = $1; nodeLeitura = $$; }
             ;
 
-exPrioM     : exPrioM MAIS exPrioMM             { $$ = makeOperatorNode(Operador::ADICAO, $1, $3); }
-            | exPrioM MENOS exPrioMM            { $$ = makeOperatorNode(Operador::SUBTRACAO, $1, $3); }
-            | exPrioMM                          { $$ = $1; }
+exPrioM     : exPrioM MAIS exPrioMM             { $$ = makeOperatorNode(Operador::ADICAO, $1, $3); nodeLeitura = $$; }
+            | exPrioM MENOS exPrioMM            { $$ = makeOperatorNode(Operador::SUBTRACAO, $1, $3); nodeLeitura = $$; }
+            | exPrioMM                          { $$ = $1; nodeLeitura = $$; }
             ;                               
 
-exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = makeOperatorNode(Operador::MULTIPLICACAO, $1, $3); }
-            | exPrioMM RESTO exPrioMMM          { $$ = makeOperatorNode(Operador::RESTO, $1, $3); }
-            | exPrioMM DIVISAO exPrioMMM        { $$ = makeOperatorNode(Operador::DIVISAO, $1, $3); }
-            | exPrioMMM                         { $$ = $1; }
+exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = makeOperatorNode(Operador::MULTIPLICACAO, $1, $3); nodeLeitura = $$; }
+            | exPrioMM RESTO exPrioMMM          { $$ = makeOperatorNode(Operador::RESTO, $1, $3); nodeLeitura = $$; }
+            | exPrioMM DIVISAO exPrioMMM        { $$ = makeOperatorNode(Operador::DIVISAO, $1, $3); nodeLeitura = $$; }
+            | exPrioMMM                         { $$ = $1; nodeLeitura = $$; }
             ;
 
-exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = makeOperatorNode(Operador::POTENCIA, $1, $3); }
-            | PRT_ESQ expressao PRT_DIR         { $$ = $2; }
-            | valorUnario                       { $$ = $1; }
+exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = makeOperatorNode(Operador::POTENCIA, $1, $3); nodeLeitura = $$; }
+            | PRT_ESQ expressao PRT_DIR         { $$ = $2; nodeLeitura = $$; }
+            | valorUnario                       { $$ = $1; nodeLeitura = $$; }
             ;
 
 valorUnario : valorExpr         { $$ = $1; }
-            | MAIS valorExpr    { $$ = makeUnaryNode(Operador::POSITIVO, $2); }
-            | MENOS valorExpr   { $$ = makeUnaryNode(Operador::NEGATIVO, $2); }
-            | numericos         { $$ = $1; }
-            | MAIS numericos    { $$ = makeUnaryNode(Operador::POSITIVO, $2); }
-            | MENOS numericos   { $$ = makeUnaryNode(Operador::NEGATIVO, $2); }
+            | MAIS valorExpr    { $$ = makeUnaryNode(Operador::POSITIVO, $2); nodeLeitura = $$; }
+            | MENOS valorExpr   { $$ = makeUnaryNode(Operador::NEGATIVO, $2); nodeLeitura = $$; }
+            | numericos         { $$ = $1; nodeLeitura = $$; }
+            | MAIS numericos    { $$ = makeUnaryNode(Operador::POSITIVO, $2); nodeLeitura = $$; }
+            | MENOS numericos   { $$ = makeUnaryNode(Operador::NEGATIVO, $2); nodeLeitura = $$; }
             ;
 
-numericos   : numero        { $$ = makeConstantNode($1); }
-            | CONSTANTE_E   { $$ = makeConstantNode(NUM_EULER); }
-            | CONSTANTE_PI  { $$ = makeConstantNode(PI); }
+numericos   : numero        { $$ = makeConstantNode($1); nodeLeitura = $$; }
+            | CONSTANTE_E   { $$ = makeConstantNode(NUM_EULER); nodeLeitura = $$; }
+            | CONSTANTE_PI  { $$ = makeConstantNode(PI); nodeLeitura = $$; }
             ;
 
-valorExpr   : VARIAVEL_X    { $$ = makeXNode(token); }
-            | funcao        { $$ = $1; }
-            | IDENTIFIER    { $$ = makeIdNode($1); free($1); }
+valorExpr   : VARIAVEL_X    { $$ = makeXNode(token); nodeLeitura = $$; }
+            | funcao        { $$ = $1; nodeLeitura = $$; }
+            | IDENTIFIER    { $$ = makeIdNode($1); free($1); nodeLeitura = $$; }
             ;
 
-funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = makeFunctionNode(Funcao::SENO, $3); }
-            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = makeFunctionNode(Funcao::COSSENO, $3); }
-            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::TANGENTE, $3); }
-            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::ABSOLUTO, $3); }
+funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = makeFunctionNode(Funcao::SENO, $3); nodeLeitura = $$; }
+            | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = makeFunctionNode(Funcao::COSSENO, $3); nodeLeitura = $$; }
+            | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::TANGENTE, $3); nodeLeitura = $$; }
+            | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::ABSOLUTO, $3); nodeLeitura = $$; }
             ;
 
 %%
@@ -195,31 +204,40 @@ int separarComandos()
 
 int emitirErroSintatico(int erro)
 {
-    cout << "\nSYNTAX ERROR: ";
+    if(!erroSintatico && !erroLexico){
+        cout << "\nSYNTAX ERROR: ";
 
-    switch(erro)
-    {
-        case TOKEN_FALTANTE:
-            cout << "Incomplete Command\n";
-            break;
+        switch(erro)
+        {
+            case TOKEN_FALTANTE:
+                cout << "Incomplete Command\n\n";
+                break;
 
-        case TOKEN_INESPERADO:
-            if(strcmp(token, "\n") == 0){
-                cout << "[\\n]\n";
-            }else{
-                cout << "[" << token << "]\n";
-            }
-            break;
+            case TOKEN_INESPERADO:
+                if(strcmp(token, "\n") == 0){
+                    cout << "[\\n]\n";
+                }else{
+                    cout << "[" << token << "]\n\n";
+                }
+                break;
 
-        default:
-            break;
+            default:
+                break;
+        }
     }
+
+    erroSintatico = true;
 
     return SUCESSO;
 }
 
 void yyerror(const void *string)
 {
-    emitirErroSintatico(TOKEN_INESPERADO);
-    cout << "erro sintatico" << endl;
+    // cout << "\nerro sintatico";
+
+    if(*token == '\n'){
+        emitirErroSintatico(TOKEN_FALTANTE);
+    }else{
+        emitirErroSintatico(TOKEN_INESPERADO);
+    }
 }

@@ -3,12 +3,13 @@
 #include <iostream>
 #include <string>
 #include "tokens.h"
-// #include "ast.h"
 
 using std::cout;
 using std::string;
 
 extern char *token;
+extern bool erroLexico;
+extern bool erroSintatico;
 
 // Tipos de erros
 enum {TOKEN_DESCONHECIDO};
@@ -109,7 +110,7 @@ abs             copiarToken(); return ABSOLUTO;
                     return IDENTIFIER;  
 }      
 
-.               emitirErroLexico(TOKEN_DESCONHECIDO); return ERRO; 
+.               return emitirErroLexico(TOKEN_DESCONHECIDO); 
 
 %%
 
@@ -123,15 +124,19 @@ void copiarToken()
 
 int emitirErroLexico(int erro)
 {
-    switch(erro)
-    {
-        case TOKEN_DESCONHECIDO:
-            cout << "\nInvalid Symbol: " << yytext << "\n\n";
-           break;
-
-        default:
+    if(!erroLexico && !erroSintatico){
+        switch(erro)
+        {
+            case TOKEN_DESCONHECIDO:
+                cout << "\nInvalid Symbol: " << yytext << "\n\n";
             break;
+
+            default:
+                break;
+        }
     }
+    
+    erroLexico = true;
 
     return ERRO;
 }

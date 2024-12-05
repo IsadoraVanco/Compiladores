@@ -367,5 +367,8 @@ public:
 extern DCMat *dcmat;
 extern Limites *limites;
 extern char *token;
+extern NodeArvore *nodeLeitura;
+extern bool erroLexico;
+extern bool erroSintatico;
 
 #endif
