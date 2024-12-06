@@ -924,7 +924,7 @@ double DCMat::getSymbol(string name)
     }
 }
 
-void DCMat::addFloatSymbol(string name, NodeArvore* root)
+void DCMat::addExpressionSymbol(string name, NodeArvore* root)
 {
     if(isXVariablePresent(root)){
         showError(Erro::VariableX);

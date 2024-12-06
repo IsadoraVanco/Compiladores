@@ -353,7 +353,7 @@ public:
      * @param name O nome do símbolo
      * @param root O endereço da raíz da árvore da expressão
      */
-    void addFloatSymbol(string name, NodeArvore* root);
+    void addExpressionSymbol(string name, NodeArvore* root);
 
     /**
      * @brief Adiciona um símbolo na lista

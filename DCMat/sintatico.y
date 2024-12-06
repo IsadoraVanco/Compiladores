@@ -134,7 +134,7 @@ simbSemRtn  : IDENTIFIER ATRIBUICAO matriz PNT_VIRG NOVA_LINHA  { dcmat->addSymb
             | SHOW SYMBOLS PNT_VIRG NOVA_LINHA                  { dcmat->showAllSymbols(); }
             ;
 
-simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG NOVA_LINHA   { dcmat->addFloatSymbol($1, $3); free($1); }
+simbolos    : IDENTIFIER ATRIBUICAO expressao PNT_VIRG NOVA_LINHA   { dcmat->addExpressionSymbol($1, $3); free($1); }
             | SHOW MATRIX PNT_VIRG NOVA_LINHA                       { dcmat->showMatrix(nullptr); }
             ;
 
@@ -165,9 +165,8 @@ exPrioMM    : exPrioMM MULTIPLICACAO exPrioMMM  { $$ = makeOperatorNode(Operador
             | exPrioMMM                         { $$ = $1; nodeLeitura = $$; }
             ;
 
-exPrioMMM   : valorUnario POTENCIA exPrioMMM    { $$ = makeOperatorNode(Operador::POTENCIA, $1, $3); nodeLeitura = $$; }
-            | PRT_ESQ expressao PRT_DIR         { $$ = $2; nodeLeitura = $$; }
-            | valorUnario                       { $$ = $1; nodeLeitura = $$; }
+exPrioMMM   : valorUnario POTENCIA exPrioMMM        { $$ = makeOperatorNode(Operador::POTENCIA, $1, $3); nodeLeitura = $$; }
+            | valorUnario                           { $$ = $1; nodeLeitura = $$; }
             ;
 
 valorUnario : valorExpr         { $$ = $1; }
@@ -192,6 +191,7 @@ funcao      : SENO PRT_ESQ expressao PRT_DIR        { $$ = makeFunctionNode(Func
             | COSSENO PRT_ESQ expressao PRT_DIR     { $$ = makeFunctionNode(Funcao::COSSENO, $3); nodeLeitura = $$; }
             | TANGENTE PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::TANGENTE, $3); nodeLeitura = $$; }
             | ABSOLUTO PRT_ESQ expressao PRT_DIR    { $$ = makeFunctionNode(Funcao::ABSOLUTO, $3); nodeLeitura = $$; }
+            | PRT_ESQ expressao PRT_DIR             { $$ = $2; nodeLeitura = $$; }
             ;
 
 %%
@@ -226,6 +226,10 @@ int emitirErroSintatico(int erro)
         }
     }
 
+    if(nodeLeitura){
+        // Free demais ou free de menos? :)
+        freeNodes(nodeLeitura);
+    }
     erroSintatico = true;
 
     return SUCESSO;
