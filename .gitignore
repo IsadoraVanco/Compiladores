@@ -1,0 +1,7 @@
+.vscode
+/DCMat/dcmat
+/DCMat/sintatico.tab.c
+/DCMat/tokens.h
+/DCMat/lex.yy.c
+/Seminario/loader
+/Seminario/program.bin
