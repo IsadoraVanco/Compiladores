@@ -1,8 +1,15 @@
 .vscode
+
 /DCMat/dcmat
 /DCMat/sintatico.tab.c
 /DCMat/tokens.h
 /DCMat/lex.yy.c
+
 /Seminario/loader
 /Seminario/hello
 /Seminario/program.bin
+
+/RegAlloc/regalloc
+/RegAlloc/sintatico.tab.c
+/RegAlloc/tokens.h
+/RegAlloc/lex.yy.c
