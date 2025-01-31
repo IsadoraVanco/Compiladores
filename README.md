@@ -11,4 +11,4 @@ Trabalhos e exercicios de implementação feitos durante as matérias de Compila
     - Lista 05 [Autômatos e início do Léxico]
     - Lista 06 [Início do Léxico]
     - Lista 07 [Início do Léxico com Flex]
-* **Seminário**: Arquivos utilizados no seminário
+* **Seminário**: Arquivos utilizados no seminário - Compiladores II
