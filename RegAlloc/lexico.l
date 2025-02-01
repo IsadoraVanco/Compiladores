@@ -40,8 +40,10 @@ Grafo           return GRAFO;
                     return NUMERO_INTEIRO;
 }
 
+{nova_linha}    return NOVA_LINHA;
 {espaco}        ;
-{nova_linha}    ;
+
+<<EOF>>           return EoF;
 
 .               return emitirErroLexico(TOKEN_DESCONHECIDO); 
 

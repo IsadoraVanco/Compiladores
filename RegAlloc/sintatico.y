@@ -4,7 +4,6 @@
 #include "grafo.h"
 
 using std::cout;
-using std::endl;
 
 extern int yytext;
 
@@ -30,31 +29,34 @@ void yyerror(const void *string);
 %token ID_K
 %token <numInt> NUMERO_INTEIRO
 
+%token NOVA_LINHA
+%token EoF
 %token ERRO
 
 %start inicial
 %%
 
-inicial     : nome numeroK associacoes      { return FIM; }
+inicial     : nome numeroK associacoes          { return SUCESSO; }
+            | EoF                               { /*cout << "Fim do arquivo!\n";*/ return FIM; }                      
             ;
 
-nome        : GRAFO NUMERO_INTEIRO DOIS_PONTOS      { regalloc->setNumeroId($2); }
+nome        : GRAFO NUMERO_INTEIRO DOIS_PONTOS NOVA_LINHA   { regalloc->setNumeroId($2); }
             ;
 
-numeroK     : ID_K IGUAL NUMERO_INTEIRO             { regalloc->setNumeroCores($3); }
+numeroK     : ID_K IGUAL NUMERO_INTEIRO NOVA_LINHA          { regalloc->setNumeroCores($3); }
             ;
 
 associacoes : associa nAssocia
             ;
 
-associa     : NUMERO_INTEIRO SETA valor
+associa     : NUMERO_INTEIRO SETA valor          { regalloc->adicionarVertice($1); }
             ;
 
-nAssocia    : associa
+nAssocia    : NOVA_LINHA associacoes
             | // Vazia
             ;
 
-valor       : NUMERO_INTEIRO nValor                 { }
+valor       : NUMERO_INTEIRO nValor     { regalloc->adicionarAresta($1); }
             ;
 
 nValor      : valor

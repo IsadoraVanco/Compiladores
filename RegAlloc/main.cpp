@@ -26,6 +26,7 @@ int main() {
 
     // Verificação da entrada
     do{
+        // cout << "=> NOVO\n";
         retorno = yyparse();
     }while(retorno);
 
@@ -35,7 +36,7 @@ int main() {
     // Avaliação da coloração
 
     // Resumo das análises
-
+    regalloc->resumirAnalises();
 
     delete regalloc;
     yylex_destroy();
