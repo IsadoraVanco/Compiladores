@@ -154,10 +154,6 @@ void RegAlloc::atribuirCores(TipoCor k){
     }
 }
 
-void RegAlloc::adicionarVerticesNoGrafo(){
-
-}
-
 void RegAlloc::colorirGrafo(TipoCor k){
     cout << "----------------------------------------\n";
     cout << "K = " << k << "\n\n";
@@ -168,10 +164,6 @@ void RegAlloc::colorirGrafo(TipoCor k){
 
     // Tira da pilha e atribui uma cor
     atribuirCores(k);
-    // mostrarGrafo();
-
-    // Volta os vértices restantes para o grafo
-    adicionarVerticesNoGrafo();
     // mostrarGrafo();
 }
 

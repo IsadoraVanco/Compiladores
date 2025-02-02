@@ -66,11 +66,6 @@ private:
     void atribuirCores(TipoCor k);
 
     /**
-     * @brief Adiciona os vértices restantes da pilha no grafo
-     */
-    void adicionarVerticesNoGrafo();
-
-    /**
      * @brief Faz a coloração do grafo
      * @param k O número de cores disponíveis
      */
