@@ -7,7 +7,7 @@
 
 typedef unsigned int TipoChave;
 
-class Grafo
+class RegAlloc
 {
 private:
     enum class Resultado{
@@ -30,10 +30,12 @@ private:
 
 public:
     // Construtor
-    Grafo();
+    RegAlloc();
 
     // Desconstrutor
-    ~Grafo();
+    ~RegAlloc();
+
+    // *****************************************************************
 
     /**
      * @brief Modifica o número do id do grafo
@@ -61,6 +63,13 @@ public:
     void adicionarVertice(TipoChave vertice);
 
     // *****************************************************************
+    
+    /**
+     * @brief Mostra o grafo construído
+     */
+    void mostrarGrafo();
+
+    // *****************************************************************
 
     /**
      * @brief Mostra as configurações definidas
@@ -68,11 +77,17 @@ public:
     void mostrarConfiguracoes();
 
     /**
+     * @brief Avalia a alocação usando coloração para 
+     * cada K - 1 tentativas
+     */
+    void avaliarColoracoes();
+
+    /**
      * @brief Mostra o resultado de cada análise feita 
      */
     void resumirAnalises();
 };
 
-extern Grafo *regalloc;
+extern RegAlloc *regalloc;
 
 #endif

@@ -1,7 +1,7 @@
 %{
 #include <iostream>
 #include <string.h>
-#include "grafo.h"
+#include "regalloc.h"
 
 using std::cout;
 

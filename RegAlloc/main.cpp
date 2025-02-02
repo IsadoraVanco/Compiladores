@@ -1,6 +1,6 @@
 #include <iostream>
 #include "tokens.h"  // Tokens gerados pelo Bison
-#include "grafo.h"
+#include "regalloc.h"
 
 using std::cout;
 
@@ -10,7 +10,7 @@ extern int yylex_destroy();
 // Variáveis globais
 
 // Funções do grafo
-Grafo *regalloc = nullptr;
+RegAlloc *regalloc = nullptr;
 
 // Indica se houve um erro no léxico
 bool erroLexico;
@@ -18,7 +18,7 @@ bool erroLexico;
 bool erroSintatico;
 
 int main() {
-    regalloc = new Grafo();
+    regalloc = new RegAlloc();
     erroLexico = false;
     erroSintatico = false;
 
@@ -32,8 +32,10 @@ int main() {
 
     // Mostra as configurações
     regalloc->mostrarConfiguracoes();
+    regalloc->mostrarGrafo();
 
     // Avaliação da coloração
+    regalloc->avaliarColoracoes();
 
     // Resumo das análises
     regalloc->resumirAnalises();

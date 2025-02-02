@@ -4,8 +4,8 @@ PROJETO = regalloc
 # ******** ARQUIVOS **********************************
 
 # Arquivos c/c++
-CXX_SRCS = main.cpp grafo.cpp
-CXX_HEADERS = grafo.h
+CXX_SRCS = main.cpp regalloc.cpp
+CXX_HEADERS = regalloc.h
 
 # Arquivos flex
 LEX_SRCS = lexico.l
