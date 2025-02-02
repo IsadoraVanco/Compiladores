@@ -37,22 +37,26 @@ RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(){
     TipoChave menorChave = it->first;
     size_t menorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
 
+    // cout << "== ENCONTRA O MENOR ==\n";
     for (const auto& par : grafo) {
         TipoChave chaveAtual = par.first;
         Vertice* verticeAtual = par.second;
         size_t grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
 
+        // cout << "\n a: " << grauAtual << " [" << chaveAtual << "] ";
         // Atualiza se encontrar um vértice com grau menor
-        if (grauAtual < menorGrau) {
+        if(grauAtual < menorGrau){
             menorChave = chaveAtual;
             menorGrau = grauAtual;
         }else if(grauAtual == menorGrau && chaveAtual < menorChave){
             menorChave = chaveAtual;
             menorGrau = grauAtual;
         }
+        // cout << "\n-- " << menorGrau << "[" << menorChave << "] ";
     }
+    // cout << "\n";
 
-    return grafo[menorChave]; // Retorna o vértice de menor grau
+    return grafo[menorChave];
 }
 
 void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
@@ -73,10 +77,7 @@ void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
             spill = true;
         }
 
-        // Adiciona na pilha
         pilhaVertices.push(vertice);
-
-        // Remove do grafo
         grafo.erase(vertice->chave);
 
         cout << "Push: " << vertice->chave;
@@ -85,13 +86,69 @@ void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
     }
 }
 
+void RegAlloc::atribuirCores(TipoCor k){
+    while(!pilhaVertices.empty()){
+        Vertice* vertice = pilhaVertices.top();
+        pilhaVertices.pop();
+
+        // Volta o nó para o grafo
+        grafo[vertice->chave] = vertice;
+
+        // Adiciona a aresta nos vizinhos
+        for(const auto& vizinho: *(vertice->vizinhos)){
+            if(grafo.count(vizinho)){
+                grafo[vizinho]->vizinhos->insert(vertice->chave);
+            }
+        }
+
+        // Escolhe uma cor disponível
+        std::unordered_set<TipoCor> coresVizinhos;
+        for(const auto& vizinho: *(vertice->vizinhos)){
+            if(grafo[vizinho]){
+                coresVizinhos.insert(grafo[vizinho]->cor);
+            }
+        }
+
+        // Encontra a menor cor não utilizada pelos vizinhos
+        TipoCor novaCor = 0;
+        while(coresVizinhos.count(novaCor)){
+            novaCor++;
+        }
+
+        vertice->cor = novaCor;
+
+        std::cout << "Pop: " << vertice->chave << " -> ";
+
+        if(vertice->cor < k){
+            std::cout << vertice->cor << "\n";
+        }else{
+            std::cout << "NO COLOR AVAILABLE\n";
+            analises[k - 1] = Resultado::SPILL;
+            
+            // Adiciona os vértices restantes no grafo
+        }
+    }
+}
+
+void RegAlloc::adicionarVerticesNoGrafo(){
+
+}
+
 void RegAlloc::colorirGrafo(TipoCor k){
     cout << "----------------------------------------\n";
     cout << "K = " << k << "\n\n";
 
     // Adiciona os vértices na pilha
     adicionarVerticesNaPilha(k);
+    // mostrarGrafo();
 
+    // Tira da pilha e atribui uma cor
+    atribuirCores(k);
+    // mostrarGrafo();
+
+    // Volta os vértices restantes para o grafo
+    adicionarVerticesNoGrafo();
+    // mostrarGrafo();
 }
 
 // *****************************************************************
@@ -102,7 +159,7 @@ void RegAlloc::setNumeroId(TipoChave id){
 
 void RegAlloc::setNumeroCores(TipoChave cores){
     numeroCores = cores;
-    analises.assign(numeroCores, Resultado::SPILL);
+    analises.assign(numeroCores, Resultado::ALLOCATION);
 }
 
 void RegAlloc::adicionarAresta(TipoChave aresta){
@@ -155,6 +212,7 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
 // *****************************************************************
 
 void RegAlloc::mostrarGrafo(){
+    cout << "== GRAFO ==\n";
     for(const auto& par : grafo){
         TipoChave vertice = par.first;
         Vertice* v = par.second;
