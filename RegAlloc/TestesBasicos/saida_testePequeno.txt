@@ -1,0 +1,66 @@
+Graph 666 -> Physical Registers: 4
+----------------------------------------
+----------------------------------------
+K = 4
+
+Push: 13  
+Push: 18  
+Push: 17  
+Push: 16  
+Push: 15  
+Push: 19  
+Push: 20  
+Push: 12  
+Push: 14  
+Push: 21  
+Pop: 21 -> 0
+Pop: 14 -> 1
+Pop: 12 -> 2
+Pop: 20 -> 0
+Pop: 19 -> 2
+Pop: 15 -> 1
+Pop: 16 -> 3
+Pop: 17 -> 1
+Pop: 18 -> 0
+Pop: 13 -> 1
+----------------------------------------
+K = 3
+
+Push: 13  
+Push: 18  
+Push: 17  
+Push: 12 *
+Push: 20  
+Push: 14  
+Push: 19  
+Push: 15  
+Push: 16  
+Push: 21  
+Pop: 21 -> 0
+Pop: 16 -> 1
+Pop: 15 -> 2
+Pop: 19 -> 0
+Pop: 14 -> 1
+Pop: 20 -> 2
+Pop: 12 -> NO COLOR AVAILABLE
+----------------------------------------
+K = 2
+
+Push: 19 *
+Push: 18  
+Push: 17  
+Push: 12 *
+Push: 13  
+Push: 20  
+Push: 14  
+Push: 15 *
+Push: 16  
+Push: 21  
+Pop: 21 -> 0
+Pop: 16 -> 1
+Pop: 15 -> NO COLOR AVAILABLE
+----------------------------------------
+----------------------------------------
+Graph 666 -> K = 4: Successful Allocation
+Graph 666 -> K = 3: SPILL
+Graph 666 -> K = 2: SPILL
