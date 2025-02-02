@@ -32,29 +32,53 @@ bool RegAlloc::configuracoesEstaoDefinidas(){
     return numeroId >= 0 && numeroCores >= 0;
 }
 
-RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(){
+RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(TipoCor k){
     auto it = grafo.begin();
     TipoChave menorChave = it->first;
-    size_t menorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
+    TipoCor menorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
 
     // cout << "== ENCONTRA O MENOR ==\n";
-    for (const auto& par : grafo) {
+    for(const auto& par : grafo){
         TipoChave chaveAtual = par.first;
         Vertice* verticeAtual = par.second;
-        size_t grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
+        TipoCor grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
 
-        // cout << "\n a: " << grauAtual << " [" << chaveAtual << "] ";
+        // cout << "\n a: " << chaveAtual << " [" << grauAtual << "] ";
         // Atualiza se encontrar um vértice com grau menor
         if(grauAtual < menorGrau){
             menorChave = chaveAtual;
             menorGrau = grauAtual;
         }else if(grauAtual == menorGrau && chaveAtual < menorChave){
             menorChave = chaveAtual;
-            menorGrau = grauAtual;
         }
         // cout << "\n-- " << menorGrau << "[" << menorChave << "] ";
     }
     // cout << "\n";
+
+    // Verifica se o menor é menor que K
+    if(menorGrau >= k){
+        it = grafo.begin();
+        menorChave = it->first;
+        TipoCor maiorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
+        
+        // cout << "== AGORA ENCONTRA O MAIOR ==\n";
+        for(const auto& par : grafo){
+            TipoChave chaveAtual = par.first;
+            Vertice* verticeAtual = par.second;
+            TipoCor grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
+
+            // cout << "\n a: " << chaveAtual << " [" << grauAtual << "] ";
+            // Atualiza se encontrar um vértice com grau menor
+            if(grauAtual > maiorGrau){
+                menorChave = chaveAtual;
+                maiorGrau = grauAtual;
+            }else if(grauAtual == maiorGrau && chaveAtual < menorChave){
+                menorChave = chaveAtual;
+            }
+            // cout << "\n-- " << menorChave << "[" << maiorGrau << "] ";
+        }
+        // cout << "\n";
+    }
 
     return grafo[menorChave];
 }
@@ -64,7 +88,7 @@ void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
 
     for(int i = grafo.size(); i > 0; i--){
         // Procura o vértice que vai ser retirado 
-        Vertice *vertice = encontrarVerticeMenorGrau();
+        Vertice *vertice = encontrarVerticeMenorGrau(k);
 
         // Retira o vértice dos vizinhos
         for(const auto& vizinho: *(vertice->vizinhos)){

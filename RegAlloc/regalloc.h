@@ -48,9 +48,10 @@ private:
 
     /**
      * @brief Encontra o vértice com menor grau no grafo
+     * @param k A quantidade de cores disponíveis
      * @return O endereço do vértice
      */
-    Vertice *encontrarVerticeMenorGrau();
+    Vertice *encontrarVerticeMenorGrau(TipoCor k);
 
     /**
      * @brief Adiciona os vértices na pilha para serem analisados
