@@ -13,3 +13,6 @@
 /RegAlloc/sintatico.tab.c
 /RegAlloc/tokens.h
 /RegAlloc/lex.yy.c
+/RegAlloc/teste_regalloc/diferencas/
+/RegAlloc/teste_regalloc/saidas/
+/RegAlloc/teste_regalloc/saidas/regalloc.zip
