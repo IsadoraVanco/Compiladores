@@ -9,17 +9,89 @@ using std::unordered_set;
 RegAlloc::RegAlloc(){
     numeroId = -1;
     numeroCores = -1;
+    arestasTemp = new Vizinhos();
 }
 
 // Destrutor
 RegAlloc::~RegAlloc(){
+    delete arestasTemp;
 
+    for(int i = grafo.size(); i < 0; i--){
+        delete grafo[i]->vizinhos;
+        delete grafo[i];
+    }
+
+    for(int i = pilhaVertices.size(); i > 0; i--){
+        delete pilhaVertices.top();
+    }
 }
 
 // *****************************************************************
 
 bool RegAlloc::configuracoesEstaoDefinidas(){
     return numeroId >= 0 && numeroCores >= 0;
+}
+
+RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(){
+    auto it = grafo.begin();
+    TipoChave menorChave = it->first;
+    size_t menorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
+
+    for (const auto& par : grafo) {
+        TipoChave chaveAtual = par.first;
+        Vertice* verticeAtual = par.second;
+        size_t grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
+
+        // Atualiza se encontrar um vértice com grau menor
+        if (grauAtual < menorGrau) {
+            menorChave = chaveAtual;
+            menorGrau = grauAtual;
+        }else if(grauAtual == menorGrau && chaveAtual < menorChave){
+            menorChave = chaveAtual;
+            menorGrau = grauAtual;
+        }
+    }
+
+    return grafo[menorChave]; // Retorna o vértice de menor grau
+}
+
+void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
+    std::vector<TipoChave> menores;
+
+    for(int i = grafo.size(); i > 0; i--){
+        // Procura o vértice que vai ser retirado 
+        Vertice *vertice = encontrarVerticeMenorGrau();
+
+        // Retira o vértice dos vizinhos
+        for(const auto& vizinho: *(vertice->vizinhos)){
+            grafo[vizinho]->vizinhos->erase(vertice->chave);
+        }
+
+        // Marca se é possível spill
+        bool spill = false;
+        if(vertice->vizinhos->size() >= k){
+            spill = true;
+        }
+
+        // Adiciona na pilha
+        pilhaVertices.push(vertice);
+
+        // Remove do grafo
+        grafo.erase(vertice->chave);
+
+        cout << "Push: " << vertice->chave;
+        cout << " " << (spill ? "*" : " ") << "\n";
+        // cout << " => " << vertice->vizinhos->size() << "\n";
+    }
+}
+
+void RegAlloc::colorirGrafo(TipoCor k){
+    cout << "----------------------------------------\n";
+    cout << "K = " << k << "\n\n";
+
+    // Adiciona os vértices na pilha
+    adicionarVerticesNaPilha(k);
+
 }
 
 // *****************************************************************
@@ -35,27 +107,61 @@ void RegAlloc::setNumeroCores(TipoChave cores){
 
 void RegAlloc::adicionarAresta(TipoChave aresta){
     // cout << "->" << aresta << "\n";
-    arestasTemp.insert(aresta);
+    arestasTemp->insert(aresta);
 }
 
 void RegAlloc::adicionarVertice(TipoChave vertice){
     // cout << "V:" << vertice << "\n";
 
-    for(const auto &i : arestasTemp){
-        grafo[vertice].insert(i);
-        grafo[i].insert(vertice);
+    // Adiciona o vértice e os vizinhos no grafo
+    if(!grafo.count(vertice)){
+        // cout << "\nVertice não existe\n";
+        Vertice *novo = new Vertice();
+        novo->chave = vertice;
+        novo->cor = numeroCores;
+        novo->vizinhos = arestasTemp;
+
+        grafo[vertice] = novo;
+    }else{
+        // cout << "\nVertice existe " << vertice << "\n";
+
+        // Verifica quais vizinhos faltam
+        for(const auto& vizinho: *arestasTemp){
+            grafo[vertice]->vizinhos->insert(vizinho);
+        }
     }
 
-    arestasTemp.clear();
+    // Adiciona os vizinhos
+    for(const auto& vizinho: *arestasTemp){
+        // Verifica se existe o vértice do vizinho no grafo
+        if(grafo.count(vizinho)){
+            // cout << "Vizinho existe " << vizinho << "\n";
+            grafo[vizinho]->vizinhos->insert(vertice);
+        }else{
+            // cout << "Vizinho não existe\n";
+            Vertice *novoVizinho = new Vertice(); 
+            novoVizinho->chave = vizinho;
+            novoVizinho->cor = numeroCores;
+            novoVizinho->vizinhos = new Vizinhos();
+            novoVizinho->vizinhos->insert(vertice);
+
+            grafo[vizinho] = novoVizinho;
+        }
+    }
+
+    arestasTemp = new Vizinhos();
 }
 
 // *****************************************************************
 
 void RegAlloc::mostrarGrafo(){
-    for(const auto& [vertice, vizinhos] : grafo){
-        cout << "V: " << vertice << " -> ";
-        
-        for(const auto& vizinho : vizinhos){
+    for(const auto& par : grafo){
+        TipoChave vertice = par.first;
+        Vertice* v = par.second;
+
+        cout << "Vértice " << vertice << " -> ";
+
+        for(const auto& vizinho: *(v->vizinhos)){
             cout << vizinho << " ";
         }
         
@@ -74,14 +180,20 @@ void RegAlloc::mostrarConfiguracoes(){
 }
 
 void RegAlloc::avaliarColoracoes(){
-    // 
+    if(configuracoesEstaoDefinidas()){
+        for(int i = numeroCores; i >= 2; i--){
+            colorirGrafo(i);
+        }
+
+        cout << "----------------------------------------\n";
+    }
 }
 
 void RegAlloc::resumirAnalises(){
     if(configuracoesEstaoDefinidas()){
         cout << "----------------------------------------\n";
-        for(int i = analises.size(); i >= 2; i--){
-            cout << "Graph " << numeroId << " -> K = " << i;
+        for(int i = analises.size() - 1; i >= 1; i--){
+            cout << "Graph " << numeroId << " -> K = " << i + 1;
             cout << ": " << (analises[i] == Resultado::SPILL ? "SPILL" : "Successful Allocation");
             cout << "\n";
         }

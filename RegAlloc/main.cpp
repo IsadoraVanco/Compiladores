@@ -32,7 +32,7 @@ int main() {
 
     // Mostra as configurações
     regalloc->mostrarConfiguracoes();
-    regalloc->mostrarGrafo();
+    // regalloc->mostrarGrafo();
 
     // Avaliação da coloração
     regalloc->avaliarColoracoes();

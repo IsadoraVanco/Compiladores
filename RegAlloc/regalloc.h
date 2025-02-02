@@ -4,29 +4,65 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-typedef unsigned int TipoChave;
+#include <stack>
 
 class RegAlloc
 {
 private:
+    typedef unsigned int TipoChave; 
+
+    typedef unsigned int TipoCor;
+
+    typedef std::unordered_set<TipoChave> Vizinhos;
+
+    typedef struct vertice{
+        TipoChave chave;
+        TipoCor cor;
+        Vizinhos *vizinhos;
+    }Vertice;
+    
     enum class Resultado{
         SPILL,
         ALLOCATION
     };
 
+    // *****************************************************************
+
     int numeroId;
     int numeroCores;
-    std::unordered_map<TipoChave, std::unordered_set<TipoChave>> grafo;
+    std::unordered_map<TipoChave, Vertice*> grafo;
     std::vector<Resultado> analises;
 
+    // Coloração
+    std::stack<Vertice*> pilhaVertices;
+
     // Temporários
-    std::unordered_set<TipoChave> arestasTemp;
+    Vizinhos *arestasTemp;
+
+    // *****************************************************************
 
     /**
      * @brief Verifica se as configurações foram definidas
      */
     bool configuracoesEstaoDefinidas();
+
+    /**
+     * @brief Encontra o vértice com menor grau no grafo
+     * @return O endereço do vértice
+     */
+    Vertice *encontrarVerticeMenorGrau();
+
+    /**
+     * @brief Adiciona os vértices na pilha para serem analisados
+     * @param k O número de cores disponíveis
+     */
+    void adicionarVerticesNaPilha(TipoCor k);
+
+    /**
+     * @brief Faz a coloração do grafo
+     * @param k O número de cores disponíveis
+     */
+    void colorirGrafo(TipoCor k);
 
 public:
     // Construtor
