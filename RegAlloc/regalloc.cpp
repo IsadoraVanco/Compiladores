@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include "regalloc.h"
 
 using std::cout;
@@ -135,11 +136,9 @@ void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
         grafo.erase(vertice->chave);
 
         cout << "Push: " << vertice->chave;
-        cout << " " << (spill ? "*" : "") << "\n";
+        cout << (spill ? " *" : "") << "\n";
         // cout << " => " << vertice->vizinhos->size() << "\n";
     }
-
-    // Retira os registradores reais
 }
 
 void RegAlloc::atribuirCores(TipoCor k){
@@ -322,10 +321,22 @@ void RegAlloc::avaliarColoracoes(){
 
 void RegAlloc::resumirAnalises(){
     if(configuracoesEstaoDefinidas()){
+        int digitos = std::log10(numeroCores) + 1;
+
         cout << "----------------------------------------";
         for(int i = analises.size() - 1; i >= 1; i--){
-            cout << "\nGraph " << numeroId << " -> K = " << i + 1;
-            cout << ": " << (analises[i] == Resultado::SPILL ? "SPILL" : "Successful Allocation");
+            cout << "\nGraph " << numeroId << " -> K = ";
+            
+            // Alinha o número
+            int espaco = std::log10(i + 1) + 1;
+            espaco = digitos - espaco;
+            while(espaco > 0){
+                cout << " ";
+                espaco--;
+            }
+
+            cout << i + 1 << ": ";
+            cout << (analises[i] == Resultado::SPILL ? "SPILL" : "Successful Allocation");
         }
     }
 }
