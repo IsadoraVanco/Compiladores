@@ -47,6 +47,18 @@ private:
     bool configuracoesEstaoDefinidas();
 
     /**
+     * @brief Verifica se ainda existe registrador virtual no grafo
+     * @return Se ainda existem registradores virtuais no grafo
+     */
+    bool existeRegistradorVirtual();
+
+    /**
+     * @brief Retorna o endereço do primeiro registrador virtual (vertice) do grafo
+     * @return O endereço do primeiro vertice
+     */
+    Vertice *retornarPrimeiroRegVirtual();
+
+    /**
      * @brief Encontra o vértice com menor grau no grafo
      * @param k A quantidade de cores disponíveis
      * @return O endereço do vértice

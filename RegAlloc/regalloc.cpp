@@ -32,18 +32,43 @@ bool RegAlloc::configuracoesEstaoDefinidas(){
     return numeroId >= 0 && numeroCores >= 0;
 }
 
+bool RegAlloc::existeRegistradorVirtual(){
+    for(const auto& par: grafo){
+        if(par.second->chave >= numeroCores){
+            return true;
+        }
+    }
+    return false;
+}
+
+RegAlloc::Vertice *RegAlloc::retornarPrimeiroRegVirtual(){
+    for(const auto& par: grafo){
+        if(par.second->chave >= numeroCores){
+            return par.second;
+        }
+    }
+
+    return nullptr;
+}
+
 RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(TipoCor k){
-    auto it = grafo.begin();
-    TipoChave menorChave = it->first;
-    TipoCor menorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
+    Vertice *regVirtual = retornarPrimeiroRegVirtual();
+
+    TipoChave menorChave = regVirtual->chave;
+    TipoCor menorGrau = regVirtual->vizinhos ? regVirtual->vizinhos->size() : 0;
 
     // cout << "== ENCONTRA O MENOR ==\n";
-    for(const auto& par : grafo){
+    for(const auto& par: grafo){
         TipoChave chaveAtual = par.first;
         Vertice* verticeAtual = par.second;
         TipoCor grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
 
         // cout << "\n a: " << chaveAtual << " [" << grauAtual << "] ";
+        // Ignora os vértices de registradores reais
+        if(chaveAtual < numeroCores){
+            continue;
+        }
+
         // Atualiza se encontrar um vértice com grau menor
         if(grauAtual < menorGrau){
             menorChave = chaveAtual;
@@ -57,17 +82,21 @@ RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(TipoCor k){
 
     // Verifica se o menor é menor que K
     if(menorGrau >= k){
-        it = grafo.begin();
-        menorChave = it->first;
-        TipoCor maiorGrau = it->second->vizinhos ? it->second->vizinhos->size() : 0;
+        menorChave = regVirtual->chave;
+        TipoCor maiorGrau = regVirtual->vizinhos ? regVirtual->vizinhos->size() : 0;
         
         // cout << "== AGORA ENCONTRA O MAIOR ==\n";
-        for(const auto& par : grafo){
+        for(const auto& par: grafo){
             TipoChave chaveAtual = par.first;
             Vertice* verticeAtual = par.second;
             TipoCor grauAtual = verticeAtual->vizinhos ? verticeAtual->vizinhos->size() : 0;
 
             // cout << "\n a: " << chaveAtual << " [" << grauAtual << "] ";
+            // Ignora se é um registrador real
+            if(chaveAtual < numeroCores){
+                continue;
+            }
+
             // Atualiza se encontrar um vértice com grau menor
             if(grauAtual > maiorGrau){
                 menorChave = chaveAtual;
@@ -86,7 +115,8 @@ RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(TipoCor k){
 void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
     std::vector<TipoChave> menores;
 
-    for(int i = grafo.size(); i > 0; i--){
+    // Retira os regisradores virtuais
+    while(existeRegistradorVirtual()){
         // Procura o vértice que vai ser retirado 
         Vertice *vertice = encontrarVerticeMenorGrau(k);
 
@@ -105,9 +135,11 @@ void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
         grafo.erase(vertice->chave);
 
         cout << "Push: " << vertice->chave;
-        cout << " " << (spill ? "*" : " ") << "\n";
+        cout << " " << (spill ? "*" : "") << "\n";
         // cout << " => " << vertice->vizinhos->size() << "\n";
     }
+
+    // Retira os registradores reais
 }
 
 void RegAlloc::atribuirCores(TipoCor k){
@@ -205,8 +237,13 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
         // cout << "\nVertice não existe\n";
         Vertice *novo = new Vertice();
         novo->chave = vertice;
-        novo->cor = numeroCores;
         novo->vizinhos = arestasTemp;
+        // Caso seja um registrador físico
+        if(vertice < numeroCores){
+            novo->cor = vertice;
+        }else{
+            novo->cor = numeroCores;
+        }
 
         grafo[vertice] = novo;
     }else{
@@ -228,7 +265,13 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
             // cout << "Vizinho não existe\n";
             Vertice *novoVizinho = new Vertice(); 
             novoVizinho->chave = vizinho;
-            novoVizinho->cor = numeroCores;
+            // Se é um registrador físico
+            if(vizinho < numeroCores){
+                novoVizinho->cor = vizinho;
+            }else{
+                novoVizinho->cor = numeroCores;
+            }
+
             novoVizinho->vizinhos = new Vizinhos();
             novoVizinho->vizinhos->insert(vertice);
 
@@ -279,11 +322,10 @@ void RegAlloc::avaliarColoracoes(){
 
 void RegAlloc::resumirAnalises(){
     if(configuracoesEstaoDefinidas()){
-        cout << "----------------------------------------\n";
+        cout << "----------------------------------------";
         for(int i = analises.size() - 1; i >= 1; i--){
-            cout << "Graph " << numeroId << " -> K = " << i + 1;
+            cout << "\nGraph " << numeroId << " -> K = " << i + 1;
             cout << ": " << (analises[i] == Resultado::SPILL ? "SPILL" : "Successful Allocation");
-            cout << "\n";
         }
     }
 }
