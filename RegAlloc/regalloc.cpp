@@ -150,6 +150,20 @@ void RegAlloc::atribuirCores(TipoCor k){
             analises[k - 1] = Resultado::SPILL;
             
             // Adiciona os vértices restantes no grafo
+            while(!pilhaVertices.empty()){
+                Vertice* vertice = pilhaVertices.top();
+                pilhaVertices.pop();
+
+                // Volta o nó para o grafo
+                grafo[vertice->chave] = vertice;
+
+                // Adiciona a aresta nos vizinhos
+                for(const auto& vizinho: *(vertice->vizinhos)){
+                    if(grafo.count(vizinho)){
+                        grafo[vizinho]->vizinhos->insert(vertice->chave);
+                    }
+                }
+            }
         }
     }
 }
