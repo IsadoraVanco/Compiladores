@@ -17,12 +17,13 @@ RegAlloc::RegAlloc(){
 RegAlloc::~RegAlloc(){
     delete arestasTemp;
 
-    for(int i = grafo.size(); i < 0; i--){
-        delete grafo[i]->vizinhos;
-        delete grafo[i];
+    for(const auto& i: grafo){
+        delete i.second->vizinhos;
+        delete i.second;
     }
 
-    for(int i = pilhaVertices.size(); i > 0; i--){
+    for(int i = pilhaVertices.size() - 1; i >= 0; i--){
+        delete pilhaVertices.top()->vizinhos;
         delete pilhaVertices.top();
     }
 }
@@ -233,10 +234,12 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
 
     // Adiciona o vértice e os vizinhos no grafo
     if(!grafo.count(vertice)){
-        // cout << "\nVertice não existe\n";
+        // cout << "\nVertice não existe " << vertice;
         Vertice *novo = new Vertice();
         novo->chave = vertice;
         novo->vizinhos = arestasTemp;
+        arestasTemp = new Vizinhos();
+
         // Caso seja um registrador físico
         if(vertice < numeroCores){
             novo->cor = vertice;
@@ -261,7 +264,7 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
             // cout << "Vizinho existe " << vizinho << "\n";
             grafo[vizinho]->vizinhos->insert(vertice);
         }else{
-            // cout << "Vizinho não existe\n";
+            // cout << "\nVizinho não existe " << vizinho;
             Vertice *novoVizinho = new Vertice(); 
             novoVizinho->chave = vizinho;
             // Se é um registrador físico
@@ -277,8 +280,6 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
             grafo[vizinho] = novoVizinho;
         }
     }
-
-    arestasTemp = new Vizinhos();
 }
 
 // *****************************************************************
