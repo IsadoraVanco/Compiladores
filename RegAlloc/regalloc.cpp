@@ -56,10 +56,16 @@ RegAlloc::Vertice *RegAlloc::retornarPrimeiroRegVirtual(){
 RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(TipoCor k){
     Vertice *regVirtual = retornarPrimeiroRegVirtual();
 
+    if(regVirtual == nullptr){
+        // cout << "nao existe registrador virtual\n";
+        return nullptr;
+    }
+
     TipoChave menorChave = regVirtual->chave;
     TipoCor menorGrau = regVirtual->vizinhos ? regVirtual->vizinhos->size() : 0;
+    // cout << "Primeiro registrador virtual: " << menorChave << "\n";
 
-    // cout << "== ENCONTRA O MENOR ==\n";
+    // cout << "\n== ENCONTRA O MENOR ==";
     for(const auto& par: grafo){
         TipoChave chaveAtual = par.first;
         Vertice* verticeAtual = par.second;
@@ -78,7 +84,7 @@ RegAlloc::Vertice *RegAlloc::encontrarVerticeMenorGrau(TipoCor k){
         }else if(grauAtual == menorGrau && chaveAtual < menorChave){
             menorChave = chaveAtual;
         }
-        // cout << "\n-- " << menorGrau << "[" << menorChave << "] ";
+        // cout << "\n-- " << menorChave << "[" << menorGrau << "] ";
     }
     // cout << "\n";
 
@@ -121,6 +127,10 @@ void RegAlloc::adicionarVerticesNaPilha(TipoCor k){
     while(existeRegistradorVirtual()){
         // Procura o vértice que vai ser retirado 
         Vertice *vertice = encontrarVerticeMenorGrau(k);
+
+        if(vertice == nullptr){
+            break;
+        }
 
         // Retira o vértice dos vizinhos
         for(const auto& vizinho: *(vertice->vizinhos)){
@@ -234,11 +244,10 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
 
     // Adiciona o vértice e os vizinhos no grafo
     if(!grafo.count(vertice)){
-        // cout << "\nVertice não existe " << vertice;
+        // cout << "Vertice não existe " << vertice;
         Vertice *novo = new Vertice();
         novo->chave = vertice;
         novo->vizinhos = arestasTemp;
-        arestasTemp = new Vizinhos();
 
         // Caso seja um registrador físico
         if(vertice < numeroCores){
@@ -264,7 +273,7 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
             // cout << "Vizinho existe " << vizinho << "\n";
             grafo[vizinho]->vizinhos->insert(vertice);
         }else{
-            // cout << "\nVizinho não existe " << vizinho;
+            // cout << "Vizinho não existe " << vizinho;
             Vertice *novoVizinho = new Vertice(); 
             novoVizinho->chave = vizinho;
             // Se é um registrador físico
@@ -280,6 +289,8 @@ void RegAlloc::adicionarVertice(TipoChave vertice){
             grafo[vizinho] = novoVizinho;
         }
     }
+
+    arestasTemp = new Vizinhos();
 }
 
 // *****************************************************************
