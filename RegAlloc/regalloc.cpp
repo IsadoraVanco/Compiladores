@@ -16,15 +16,20 @@ RegAlloc::RegAlloc(){
 // Destrutor
 RegAlloc::~RegAlloc(){
     delete arestasTemp;
+    analises.clear();
 
     for(const auto& i: grafo){
         delete i.second->vizinhos;
         delete i.second;
     }
 
-    for(int i = pilhaVertices.size() - 1; i >= 0; i--){
-        delete pilhaVertices.top()->vizinhos;
-        delete pilhaVertices.top();
+    grafo.clear();
+
+    while(!pilhaVertices.empty()){
+        Vertice *v = pilhaVertices.top();
+        delete v->vizinhos;
+        delete v;
+        pilhaVertices.pop();
     }
 }
 

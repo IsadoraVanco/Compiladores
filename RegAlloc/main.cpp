@@ -6,6 +6,7 @@ using std::cout;
 
 extern int yyparse();
 extern int yylex_destroy();
+extern void yyfree(void*);
 
 // Variáveis globais
 
@@ -42,6 +43,7 @@ int main() {
 
     delete regalloc;
     yylex_destroy();
+    yyfree(nullptr);
 
     return 0;
 }
