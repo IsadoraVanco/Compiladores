@@ -48,6 +48,11 @@ private:
      * @brief Verifica se as configurações foram definidas
      */
     bool configuracoesEstaoDefinidas();
+    
+    /**
+     * @brief Limpa todos os valores obtidos na última alocação
+     */
+    void limparUltimaAlocacao();
 
     /**
      * @brief Faz a alocação dos registradores de acordo com o

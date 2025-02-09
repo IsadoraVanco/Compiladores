@@ -21,16 +21,96 @@ bool LinearScan::configuracoesEstaoDefinidas(){
     return numeroRegTotais > 0;
 }
 
-void LinearScan::alocarRegistradores(TipoRegFisico k){
+void LinearScan::limparUltimaAlocacao(){
+    ativos.clear();
+    
+    alocacoes.clear();
+}
 
+void LinearScan::alocarRegistradores(TipoRegFisico k){
+    // Limpa todos os últimos valores
+    limparUltimaAlocacao();
+
+    // Inicializa os registradores livres
+    bool livres[k];
+    for(int i = 0; i < k; i++){
+        livres[i] = true;
+    }
+
+    // Itera sob a lista ordenada de tempo de vida
+    auto it = registradores.begin();
+    for(int iteracao = 0; it != registradores.end(); iteracao++){
+        
+        // Procura um registrador expirado
+        for(auto exp = ativos.begin(); exp != ativos.end(); ){
+            // cout << "verifica se é expirado: " << *exp << "\n";
+            Registrador *regAtual = regIndices[*exp];
+            TipoLinha fimAtual = regAtual->fim;
+            // cout << "fim " << fimAtual << "\n";
+
+            // Registrador expirado
+            if(fimAtual <= it->inicio){  
+                TipoRegFisico expirado = alocacoes[*exp];
+                livres[expirado] = true;
+                // Remove e avança para o próximo
+                exp = ativos.erase(exp);
+            }else{
+                ++exp;
+            }
+        }
+
+        // Existe um registrador disponivel
+        if(ativos.size() < k){
+            // cout << "ativos: " << ativos.size() << "\n";
+            // Procura o menor registrador disponível
+            TipoRegFisico menorReg;
+            for(int i = 0; i < k; i++){
+                if(livres[i]){
+                    menorReg = i;
+                    livres[i] = false;
+                    break;
+                }
+            }
+            
+            // Coloca como ativo
+            ativos.push_back(it->id);
+
+            // Marca como registrador alocado
+            // cout << "Aloca " << it->id << " em " << menorReg << "\n";
+            alocacoes[it->id] = menorReg;
+        }else{
+            //spill
+            alocacoes[it->id] = numeroRegTotais;
+            cout << "Spill em " << it->id << " na iteração " << iteracao << "\n";
+        }
+
+        ++it;
+    }
+    // cout << "fim da alocação\n";
 }
 
 void LinearScan::mostrarAlocacoes(){
-
+    auto it = registradores.begin();
+    while(it != registradores.end()){
+        cout << "vr" << it->id << ": ";
+        
+        if(alocacoes[it->id] >= numeroRegTotais){
+            cout << "SPILL";
+        }else{
+            cout << alocacoes[it->id];
+        }
+        cout << "\n";
+        
+        it++;
+    }
 }
 
 void LinearScan::mostrarSpills(TipoRegFisico k){
-    
+    cout << spills.at(k)[0];
+
+    for(int i = 1; i < spills.at(k).size(); i++){
+        cout << ", " << spills.at(k)[i];
+    }
 }
 
 // *****************************************************************
