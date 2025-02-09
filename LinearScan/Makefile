@@ -4,8 +4,8 @@ PROJETO = linearscan
 # ******** ARQUIVOS **********************************
 
 # Arquivos c/c++
-CXX_SRCS = main.cpp
-CXX_HEADERS = 
+CXX_SRCS = main.cpp linearScan.cpp
+CXX_HEADERS = linearScan.h
 
 # Arquivos Flex
 LEX_SRCS = lexico.l

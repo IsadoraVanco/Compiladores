@@ -1,7 +1,7 @@
 %{
 #include <iostream>
 #include <string.h>
-#include "regalloc.h"
+#include "linearScan.h"
 
 using std::cout;
 
@@ -39,13 +39,13 @@ inicial     : numeroK tempos    { return SUCESSO; }
             | EoF               { /*cout << "Fim do arquivo!\n";*/ return FIM; }                      
             ;
 
-numeroK     : ID_K IGUAL NUMERO_INTEIRO     { }
+numeroK     : ID_K IGUAL NUMERO_INTEIRO     { linearScan->setNumeroRegistradores($3); }
             ;
 
 tempos : associa nAssocia
             ;
 
-associa     : REG_VIRTUAL NUMERO_INTEIRO SETA NUMERO_INTEIRO NUMERO_INTEIRO     { }
+associa     : REG_VIRTUAL NUMERO_INTEIRO SETA NUMERO_INTEIRO NUMERO_INTEIRO     { linearScan->adicionarRegistradorVirtual($2, $4, $5); }
             ;
 
 nAssocia    : tempos

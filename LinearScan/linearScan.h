@@ -29,7 +29,7 @@ private:
     };
 
     // *****************************************************************
-
+    
     int numeroRegTotais;
     std::list<Registrador> registradores;
     std::unordered_map<TipoChave, TipoRegFisico> alocacoes;
@@ -38,9 +38,34 @@ private:
 
     // Spill
     std::unordered_map<TipoRegFisico, std::vector<TipoIteracao>> spills;
-
+    
     // Auxiliar 
     std::unordered_map<TipoChave, Registrador*> regIndices;
+    
+    // *****************************************************************
+
+    /**
+     * @brief Verifica se as configurações foram definidas
+     */
+    bool configuracoesEstaoDefinidas();
+
+    /**
+     * @brief Faz a alocação dos registradores de acordo com o
+     * total disponível
+     * @param k O número total de registradores disponíveis
+     */
+    void alocarRegistradores(TipoRegFisico k);
+
+    /**
+     * @brief Mostra as alocações feitas na última alocação
+     */
+    void mostrarAlocacoes();
+
+    /**
+     * @brief Mostra as iterações que teve spill
+     * @param k A quantidade total de registradores disponíveis
+     */
+    void mostrarSpills(TipoRegFisico k);
 
 public:
     // Construtor
@@ -53,9 +78,9 @@ public:
 
     /**
      * @brief Modifica o número de registradores físicos totais
-     * @param cores O número de registradores físicos
+     * @param numero O número de registradores físicos
      */
-    void setNumeroRegistradores(TipoChave cores);
+    void setNumeroRegistradores(TipoChave numero);
 
     /**
      * @brief Adiciona um registrador com seu id e indicando seu 
@@ -67,11 +92,13 @@ public:
     void adicionarRegistradorVirtual(TipoChave id, TipoLinha inicio, TipoLinha fim);
 
     // *****************************************************************
-
+    
     /**
-     * @brief Mostra as configurações definidas
+     * @brief Mostra os registradores armazenados
      */
-    void mostrarConfiguracoes();
+    void mostrarRegistradores();
+
+    // *****************************************************************
 
     /**
      * @brief Faz as alocações usando o algoritmo do Linear Scan 

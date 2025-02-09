@@ -2,8 +2,6 @@
 #include "tokens.h"  // Tokens gerados pelo Bison
 #include "linearScan.h"
 
-using std::cout;
-
 extern int yyparse();
 extern int yylex_destroy();
 extern void yyfree(void*);
@@ -27,12 +25,11 @@ int main() {
 
     // Verificação da entrada
     do{
-        // cout << "=> NOVO\n";
         retorno = yyparse();
     }while(retorno);
 
-    // Mostra as configurações
-    linearScan->mostrarConfiguracoes();
+    // Mostra todos os registradores
+    // linearScan->mostrarRegistradores();
 
     // Faz as alocações
     linearScan->fazerAlocacoes();
