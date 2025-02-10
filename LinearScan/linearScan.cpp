@@ -42,7 +42,7 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
     // Itera sob a lista ordenada de tempo de vida
     auto regIt = registradores.begin();
     for(int numIteracao = 0; regIt != registradores.end(); numIteracao++){
-        
+        // cout << "====it: " << numIteracao << " linha: " << regIt->inicio << " ====\n";
         // Procura um registrador expirado
         for(auto exp = ativos.begin(); exp != ativos.end(); ){
             TipoLinha fimAtual = (*exp)->fim;
@@ -51,7 +51,7 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
             if(fimAtual <= regIt->inicio){  
                 TipoRegFisico expirado = alocacoes[(*exp)->id];
                 livres[expirado] = true;
-                // cout << "E: " << expirado << "\n";
+                // cout << "E: " << expirado << " <-- " << (*exp)->id << "\n";
                 // Remove e avança para o próximo
                 exp = ativos.erase(exp);
             }else{
@@ -67,7 +67,7 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
                 if(livres[i]){
                     menorReg = i;
                     livres[i] = false;
-                    // cout << "A: " << i << "\n";
+                    // cout << "A: " << i << " --> " << regIt->id << "\n";
                     break;
                 }
             }
@@ -86,9 +86,9 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
             for(auto ativosIt = ativos.begin(); ativosIt != ativos.end(); ){ 
                 
                 // Procura o que morre depois
-                if((*ativosIt)->fim > candidatoSpill->fim){
+                if((*ativosIt)->fim >= candidatoSpill->fim){
                     candidatoSpill = *ativosIt;
-                    // cout << "S: Morre depois " << candidatoSpill->id << "\n";
+                    // cout << "S: " << (*ativosIt)->id << " morre depois -> " << (*ativosIt)->fim << "\n";
 
                 }else if((*ativosIt)->fim == candidatoSpill->fim){
                     TipoLinha intervaloAtivo = (*ativosIt)->fim - (*ativosIt)->inicio;
@@ -97,13 +97,13 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
                     // Procura o que tenha o menor intervalo
                     if(intervaloAtivo < intervaloCandidato){
                         candidatoSpill = *ativosIt;
-                        // cout << "S: Menor intervalo " << candidatoSpill->id << "\n";
+                        // cout << "S: " << (*ativosIt)->id << " tem menor intervalo -> " << intervaloAtivo << "\n";
                         
                     }else if(intervaloAtivo == intervaloCandidato){
                         // Procura o que foi alocado recentemente
-                        if(candidatoSpill->inicio > (*ativosIt)->inicio){
+                        if((*ativosIt)->inicio < candidatoSpill->inicio){
                             candidatoSpill = *ativosIt;
-                            // cout << "S: Alocado recentemente " << candidatoSpill->id << "\n";
+                            // cout << "S: " << (*ativosIt)->id << " foi alocado recentemente -> " << (*ativosIt)->fim << "\n";
                         }
                     }
                 }
@@ -141,7 +141,7 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
             // Marca como spill nas alocações
             alocacoes[candidatoSpill->id] = numeroRegTotais;
 
-            // cout << "Spill: escolhido " << regIt->id << " na iteração " << numIteracao << "\n";
+            // cout << "Spill: escolhido " << candidatoSpill->id << "\n";
             
         }
 
