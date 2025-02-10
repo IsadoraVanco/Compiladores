@@ -238,17 +238,8 @@ void LinearScan::resumirAnalises(){
 
     cout << "----------------------------------------";
     for(int i = analises.size() - 1; i >= 1; i--){
-        cout << "\nK = ";
+        cout << "\nK = " << i + 1 << ": ";
         
-        // Alinha o número
-        int espaco = std::log10(i + 1) + 1;
-        espaco = digitos - espaco;
-        while(espaco > 0){
-            cout << " ";
-            espaco--;
-        }
-
-        cout << i + 1 << ": ";
         if(analises[i] == Resultado::ALLOCATION){
             cout << "Successful Allocation";
         }else{
