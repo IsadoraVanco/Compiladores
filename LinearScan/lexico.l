@@ -18,7 +18,7 @@ int emitirErroLexico(int erro);
 /* Gerais */
 decimal     [0-9]
 espaco      [ \t]
-nova_linha  \n
+nova_linha  [\n\r]
 
 /* Definições */
 num_int     {decimal}+
