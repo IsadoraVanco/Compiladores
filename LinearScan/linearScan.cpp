@@ -253,7 +253,7 @@ void LinearScan::resumirAnalises(){
         if(analises[i] == Resultado::ALLOCATION){
             cout << "Successful Allocation";
         }else{
-            cout << "SPILL on interaction(s): ";
+            cout << "SPILL on interation(s): ";
             mostrarSpills(i + 1);
         }
     }
