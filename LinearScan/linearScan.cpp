@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #include "linearScan.h"
 
 using std::cout;
@@ -21,9 +22,7 @@ bool LinearScan::configuracoesEstaoDefinidas(){
     return numeroRegTotais > 0;
 }
 
-void LinearScan::limparUltimaAlocacao(){
-    ativos.clear();
-    
+void LinearScan::limparUltimaAlocacao(){    
     alocacoes.clear();
 }
 
@@ -37,21 +36,22 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
         livres[i] = true;
     }
 
+    // Inicializa os registradores ativos
+    std::vector<Registrador *> ativos;
+
     // Itera sob a lista ordenada de tempo de vida
-    auto it = registradores.begin();
-    for(int iteracao = 0; it != registradores.end(); iteracao++){
+    auto regIt = registradores.begin();
+    for(int numIteracao = 0; regIt != registradores.end(); numIteracao++){
         
         // Procura um registrador expirado
         for(auto exp = ativos.begin(); exp != ativos.end(); ){
-            // cout << "verifica se é expirado: " << *exp << "\n";
-            Registrador *regAtual = regIndices[*exp];
-            TipoLinha fimAtual = regAtual->fim;
-            // cout << "fim " << fimAtual << "\n";
+            TipoLinha fimAtual = (*exp)->fim;
 
             // Registrador expirado
-            if(fimAtual <= it->inicio){  
-                TipoRegFisico expirado = alocacoes[*exp];
+            if(fimAtual <= regIt->inicio){  
+                TipoRegFisico expirado = alocacoes[(*exp)->id];
                 livres[expirado] = true;
+                // cout << "E: " << expirado << "\n";
                 // Remove e avança para o próximo
                 exp = ativos.erase(exp);
             }else{
@@ -61,32 +61,93 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
 
         // Existe um registrador disponivel
         if(ativos.size() < k){
-            // cout << "ativos: " << ativos.size() << "\n";
             // Procura o menor registrador disponível
             TipoRegFisico menorReg;
             for(int i = 0; i < k; i++){
                 if(livres[i]){
                     menorReg = i;
                     livres[i] = false;
+                    // cout << "A: " << i << "\n";
                     break;
                 }
             }
             
             // Coloca como ativo
-            ativos.push_back(it->id);
+            ativos.push_back(&(*regIt));
 
             // Marca como registrador alocado
-            // cout << "Aloca " << it->id << " em " << menorReg << "\n";
-            alocacoes[it->id] = menorReg;
+            alocacoes[regIt->id] = menorReg;
         }else{
-            //spill
-            alocacoes[it->id] = numeroRegTotais;
-            cout << "Spill em " << it->id << " na iteração " << iteracao << "\n";
+            // Spill
+            Registrador *candidatoSpill = &(*regIt);
+            // cout << "S: Candidato inicial " << candidatoSpill->id << "\n";
+
+            // Procura se há um registrador ativo melhor para spill
+            for(auto ativosIt = ativos.begin(); ativosIt != ativos.end(); ){ 
+                
+                // Procura o que morre depois
+                if((*ativosIt)->fim > candidatoSpill->fim){
+                    candidatoSpill = *ativosIt;
+                    // cout << "S: Morre depois " << candidatoSpill->id << "\n";
+
+                }else if((*ativosIt)->fim == candidatoSpill->fim){
+                    TipoLinha intervaloAtivo = (*ativosIt)->fim - (*ativosIt)->inicio;
+                    TipoLinha intervaloCandidato = candidatoSpill->fim - candidatoSpill->inicio;
+                    
+                    // Procura o que tenha o menor intervalo
+                    if(intervaloAtivo < intervaloCandidato){
+                        candidatoSpill = *ativosIt;
+                        // cout << "S: Menor intervalo " << candidatoSpill->id << "\n";
+                        
+                    }else if(intervaloAtivo == intervaloCandidato){
+                        // Procura o que foi alocado recentemente
+                        if(candidatoSpill->inicio > (*ativosIt)->inicio){
+                            candidatoSpill = *ativosIt;
+                            // cout << "S: Alocado recentemente " << candidatoSpill->id << "\n";
+                        }
+                    }
+                }
+                
+                ++ativosIt;
+            }
+
+            // Adiciona a iteração que teve spill
+            spills[k].push_back(numIteracao);
+            analises.at(k - 1) = Resultado::SPILL;
+
+            // Remove dos ativos, caso o novo spill seja um ativo
+            auto spillIt = ativos.begin();
+            while(spillIt != ativos.end()){
+                if((*spillIt)->id == candidatoSpill->id){
+                    // Desaloca o espaço e marca como livre
+                    TipoRegFisico regSpill = alocacoes[(*spillIt)->id];
+                    livres[regSpill] = true;
+                    // cout << "S: Libera o reg " << regSpill << "\n";
+                    
+                    // Retira dos ativos
+                    ativos.erase(spillIt);
+
+                    // Volta a iteração
+                    if(regIt != registradores.begin()){
+                        --regIt;
+                    }
+                    --numIteracao;
+
+                    break;
+                }
+                ++spillIt;
+            }
+            
+            // Marca como spill nas alocações
+            alocacoes[candidatoSpill->id] = numeroRegTotais;
+
+            // cout << "Spill: escolhido " << regIt->id << " na iteração " << numIteracao << "\n";
+            
         }
 
-        ++it;
+        // cout << numIteracao << "-Analisado: " << regIt->id << "\n";
+        ++regIt;
     }
-    // cout << "fim da alocação\n";
 }
 
 void LinearScan::mostrarAlocacoes(){
@@ -193,7 +254,7 @@ void LinearScan::resumirAnalises(){
             cout << "Successful Allocation";
         }else{
             cout << "SPILL on interaction(s): ";
-            mostrarSpills(i);
+            mostrarSpills(i + 1);
         }
     }
 }

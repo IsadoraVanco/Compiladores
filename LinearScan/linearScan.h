@@ -33,7 +33,6 @@ private:
     int numeroRegTotais;
     std::list<Registrador> registradores;
     std::unordered_map<TipoChave, TipoRegFisico> alocacoes;
-    std::vector<TipoChave> ativos;
     std::vector<Resultado> analises;
 
     // Spill
