@@ -199,6 +199,10 @@ echo -e "+----------------------------------------------------------+\n"
 rm -Rf ./safe_box/*
 rm -Rf ./saidas/*
 
+mkdir diferencas
+mkdir saidas
+mkdir safe_box
+
 echo -e "Procurando arquivo linearscan.zip... \c"
 if [ ! -e ./linearscan.zip ];
 then
@@ -229,10 +233,8 @@ then
 else
     echo -e "\e[92mOK\e[39m"    
 fi
-
 echo -e "Compilando...\n\n"
 make -C ./safe_box -I ./safe_box
-mkdir diferencas
 
 if [ $erro == 0 ];
 then
@@ -283,7 +285,7 @@ then
     echo -e "Corretos: \e[92m$corretos\e[39m"
     echo -e "Incorretos \e[91m$failed\e[39m"
     
-    if [ $corretos == 50 ];
+    if [ $corretos == 20 ];
     then
         DrawTrophy
     fi
@@ -298,7 +300,10 @@ fi
 
 echo -e "\nApagando arquivos temporarios...\n"
 rm -Rf ./safe_box/*
-# rm -Rf ./saidas/*
 rm -Rf linha.txt
 rm -f ./*stackdump*
+# Pode deixar comentado caso queira ver as diferenças de cada teste
+rm -Rf ./saidas/*
+rm -Rf ./diferencas/*
+
 let erro=0
