@@ -192,8 +192,7 @@ void LinearScan::adicionarRegistradorVirtual(TipoChave id, TipoLinha inicio, Tip
     
     // Adiciona ordenado
     auto it = registradores.begin();
-    while(it != registradores.end() && 
-            (it->inicio < inicio || (it->inicio == inicio && it->fim < fim))){
+    while(it != registradores.end() && (it->inicio <= inicio)){
         ++it;
     }
     it = registradores.insert(it, {id, inicio, fim});
