@@ -1,0 +1,127 @@
+K = 8
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: 2
+vr5: 3
+vr6: 4
+vr7: 5
+vr8: 6
+vr9: 7
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+K = 7
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: 2
+vr5: 3
+vr6: 4
+vr7: 5
+vr8: 6
+vr9: SPILL
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+K = 6
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: 2
+vr5: 3
+vr6: 4
+vr7: 5
+vr8: SPILL
+vr9: SPILL
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+K = 5
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: 2
+vr5: 3
+vr6: 4
+vr7: SPILL
+vr8: SPILL
+vr9: SPILL
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+K = 4
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: 2
+vr5: 3
+vr6: SPILL
+vr7: SPILL
+vr8: SPILL
+vr9: SPILL
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+K = 3
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: 2
+vr5: SPILL
+vr6: SPILL
+vr7: SPILL
+vr8: SPILL
+vr9: SPILL
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+K = 2
+
+vr1: 0
+vr2: 0
+vr3: 1
+vr4: SPILL
+vr5: SPILL
+vr6: SPILL
+vr7: SPILL
+vr8: SPILL
+vr9: SPILL
+vr10: SPILL
+vr11: SPILL
+vr12: SPILL
+vr13: SPILL
+vr14: 0
+----------------------------------------
+----------------------------------------
+K = 8: SPILL on interation(s): 9, 10, 11, 12
+K = 7: SPILL on interation(s): 8, 9, 10, 11, 12
+K = 6: SPILL on interation(s): 7, 8, 9, 10, 11, 12
+K = 5: SPILL on interation(s): 6, 7, 8, 9, 10, 11, 12
+K = 4: SPILL on interation(s): 5, 6, 7, 8, 9, 10, 11, 12
+K = 3: SPILL on interation(s): 4, 5, 6, 7, 8, 9, 10, 11, 12
+K = 2: SPILL on interation(s): 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
