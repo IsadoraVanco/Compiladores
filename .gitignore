@@ -1,23 +1,26 @@
 .vscode
 
+# Pastas de teste
+*/diferencas/
+*/saidas/
+
+# Gerados pelo Flex e Bison
+*/sintatico.tab.c
+*/tokens.h
+*/lex.yy.c
+
+# Compactados
+*.zip
+
+# Executáveis
+*.bin
+*.out
+
 /DCMat/dcmat
-/DCMat/sintatico.tab.c
-/DCMat/tokens.h
-/DCMat/lex.yy.c
+
+/LinearScan/linearscan
+
+/RegAlloc/regalloc
 
 /Seminario/loader
 /Seminario/hello
-/Seminario/program.bin
-
-/RegAlloc/regalloc
-/RegAlloc/sintatico.tab.c
-/RegAlloc/tokens.h
-/RegAlloc/lex.yy.c
-/RegAlloc/teste_regalloc/diferencas/
-/RegAlloc/teste_regalloc/saidas/
-/RegAlloc/teste_regalloc/saidas/regalloc.zip
-
-/LinearScan/linearscan
-/LinearScan/sintatico.tab.c
-/LinearScan/tokens.h
-/LinearScan/lex.yy.c
