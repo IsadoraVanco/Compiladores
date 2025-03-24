@@ -1,0 +1,13 @@
+// Impressão em RPN
+
+// 3.141593 SEN 1.000000 4.000000 + * 2.718282 3.141593 * +  
+rpn(sen(pi) * (1 + 4) + e * pi);
+
+// x SEN 1.000000 x + * chuchu 3.141593 * + 
+rpn(sen(x)*(1+x)+chuchu*pi);
+
+// amplitude x SEN * x + 
+rpn(amplitude * sen(x) + x);
+
+// n abobrinha *
+rpn(n*abobrinha);

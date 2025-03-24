@@ -1,0 +1,126 @@
+show settings;
+reset settings;
+set h_view -10.5:7.2;
+set v_view -5:+10.2;
+set axis on;
+set axis off;
+plot;
+show settings;
+plot(sen(x));
+set axis off;
+plot(sen(x));
+set erase plot off;
+plot(cos(x));
+plot(sen(x+(2*pi)/2));
+set erase plot on;
+rpn(sen(x)*(1+x)+chuchu*pi);
+set integral_steps 350;
+integrate(0:6.28,sen(x));
+reset settings;
+integrate(0:6.28,sen(x));
+sum(i,1:37,i-1);
+matrix = [ [1,2], [3,4,5], [6] ];
+show matrix;
+matrix = [[-1,2],[3,-4]];
+show matrix;
+matrix = [[10,2,1],[1,5,1],[2,3,10]];
+solve determinant;
+matrix = [[10,2,1,7],[1,5,1,-8],[2,3,10,6]];
+solve linear_system;
+matrix=[[1,1,8],[2,2,16]];
+solve linear_system;
+matrix = [[3,2,6],[3,2,12]];
+solve linear_system;
+about;
+minha_variavel := 123456;
+minha_variavel := 666;
+a := 222;
+b := 3*a;
+b := a+b+c+d;
+amplitude := 3;
+integrate(0:3.14,amplitude*sen(x));
+sum(n,0:10, n * amplitude);
+rpn(amplitude * sen(x) + x);
+plot(amplitude*sen(x));
+sum(n,0:10,n*abobrinha);
+rpn(n*abobrinha);
+minha_matriz := [[1,2],[3,4,5],[6]];
+amplitude;
+minha_matriz;
+d;
+show symbols;
+1+3*5
+a:=2;
+b:=4;
+a+b*pi
+pi
+a+b+c
+abs(-666)
+a/(-45+45)
+x+5
+a := [[1,1],[1,1]];
+b := [[2,2],[2,2]];
+a+b
+a-b
+a:= [[1,1]];
+b:=[[2,2,2]];
+a+b
+a-b
+a := [[1,1]];
+b := [[2,2]];
+c := [[1,2,3]];
+a+b-c
+a:=[[1]];
+b:=[[2,2]];
+c:=[[3,3,3]];
+a+b+c
+a := [[1,2]];
+b:= [[3,4,5],[6,7,8]];
+a*b
+b*a
+a:=[[1,1]];
+a*666
+666*a
+-a
+a := [[1,1]];
+b := [[2,2]];
+d := a+b;
+show symbols;
+d := Pi;
+show symbols;
+a:=666;
+a:=[[1,1]];
+a:=Pi;
+a:=[[1,2],[3,4]];
+a := 3.45;
+a;
+set float precision 0;
+a;
+b := [[1,2,3],[4,5,6],[7,8,9]];
+show settings;
+set float precision -1;
+set float precision 9;
+@
+matrix = ;
+plot
+matrix = [[0,1,2,3,4,5,6,7,8,9,0]];
+minha_matriz := [[0,1,2,3,4,5,6,7,8,9,0]];
+set v_view 4:-1;
+set h_view 1:-3.4;
+set integral_steps -2;
+integrate(1:-1,cos(x));
+matrix = [[1,2]];
+solve determinant;
+matrix = [[1]];
+solve linear_system;
+set float precision 0;
+a := [[1,2],[3,4]];
+a-5
+666-a
+sen(a)
+reset settings;
+set v_view 0:15;
+plot(x^2);
+reset settings;
+set v_view -1:1;
+plot(sen(x));

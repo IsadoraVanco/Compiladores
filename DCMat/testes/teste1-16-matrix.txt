@@ -1,0 +1,12 @@
+// Matrix
+
+// ERROR: Matrix limits out of boundaries.
+matrix = [[1,2,3,4,5,6,7,8,9,0,0]];
+
+show matrix;
+
+matrix=[[1]];
+
+matrix=[[1,2],[3,4,5],[6]];
+
+matrix = [[-1,2],[3,-4]];

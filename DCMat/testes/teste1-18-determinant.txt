@@ -1,0 +1,5 @@
+// Resolve determinante
+
+// 447.000000
+matrix = [[10,2,1],[1,5,1],[2,3,10]];
+solve determinant;

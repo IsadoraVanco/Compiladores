@@ -1,0 +1,13 @@
+// Resolve sistema linear
+
+// Com solução = 1, -2, 1
+matrix = [[10,2,1,7],[1,5,1,-8],[2,3,10,6]];
+solve linear_system;
+
+// Muitas soluções (SPI)
+matrix = [[1,1,8],[2,2,16]];
+solve linear_system;
+
+// Impossivel (SI)
+matrix = [[3,2,6],[3,2,12]];
+solve linear_system;

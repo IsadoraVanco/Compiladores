@@ -1,0 +1,13 @@
+// Configurações
+
+show settings;
+
+reset settings;
+
+set h_view -10.5:7.2;
+
+set v_view-5:+10.2;
+
+set axis on;
+
+set axis off;

@@ -1,0 +1,34 @@
+// Integral
+
+// ERROR: integral_steps must be a positive non-zero integer
+set integral_steps-2;
+
+// ERROR: lower limit must be smaller than upper limit
+integrate(1:-1,cos(x));
+
+// 0.000
+integrate(6:6, sen(x));
+
+set integral_steps 1000;
+
+//  0.000010
+integrate(0:6.28, sen(x));
+
+// 5.999921
+integrate(0:3.14,3*sen(x));
+// Valor real: 5.99999
+
+// 2.666666
+integrate(0:2, x^2);
+
+// 9.443000
+integrate(1:10.443, 1);
+
+set integral_steps 10;
+
+// 36.000000
+integrate(-1:9, x);
+// Valor real: 40
+
+// inf
+integrate(-1:9, 1/x);
