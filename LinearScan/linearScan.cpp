@@ -82,34 +82,40 @@ void LinearScan::alocarRegistradores(TipoRegFisico k){
             Registrador *candidatoSpill = &(*regIt);
             // cout << "S: Candidato inicial " << candidatoSpill->id << "\n";
 
+            // Adiciona o candidato em ativos, pois ele também é considerado como alocado
+            ativos.push_back(candidatoSpill);
+
+            auto ativosIt = ativos.begin();
             // Procura se há um registrador ativo melhor para spill
-            for(auto ativosIt = ativos.begin(); ativosIt != ativos.end(); ){ 
+            for(; ativosIt != ativos.end(); ){ 
+                // cout << "S: ativo " << (*ativosIt)->id << "\n";
                 
                 // Procura o que morre depois
-                if((*ativosIt)->fim >= candidatoSpill->fim){
+                if((*ativosIt)->fim > candidatoSpill->fim){
                     candidatoSpill = *ativosIt;
                     // cout << "S: " << (*ativosIt)->id << " morre depois -> " << (*ativosIt)->fim << "\n";
 
                 }else if((*ativosIt)->fim == candidatoSpill->fim){
-                    TipoLinha intervaloAtivo = (*ativosIt)->fim - (*ativosIt)->inicio;
-                    TipoLinha intervaloCandidato = candidatoSpill->fim - candidatoSpill->inicio;
+                    TipoLinha tempoVidaAtivo = (*ativosIt)->fim - (*ativosIt)->inicio;
+                    TipoLinha tempoVidaCandidato = candidatoSpill->fim - candidatoSpill->inicio;
                     
-                    // Procura o que tenha o menor intervalo
-                    if(intervaloAtivo < intervaloCandidato){
+                    // Procura o que tenha o menor tempo de vida
+                    if(tempoVidaAtivo < tempoVidaCandidato){
                         candidatoSpill = *ativosIt;
-                        // cout << "S: " << (*ativosIt)->id << " tem menor intervalo -> " << intervaloAtivo << "\n";
+                        // cout << "S: " << (*ativosIt)->id << " tem menor tempo de vida -> " << tempoVidaAtivo << "\n";
                         
-                    }else if(intervaloAtivo == intervaloCandidato){
+                    }else if(tempoVidaAtivo == tempoVidaCandidato){
                         // Procura o que foi alocado recentemente
-                        if((*ativosIt)->inicio < candidatoSpill->inicio){
-                            candidatoSpill = *ativosIt;
-                            // cout << "S: " << (*ativosIt)->id << " foi alocado recentemente -> " << (*ativosIt)->fim << "\n";
-                        }
+                        candidatoSpill = *ativosIt;                        
+                        // cout << "S: " << candidatoSpill->id << " alocado recentemente \n";
                     }
                 }
                 
                 ++ativosIt;
             }
+
+            // Retira o candidato de ativos
+            ativos.erase(--ativosIt);
 
             // Adiciona a iteração que teve spill
             spills[k].push_back(numIteracao);
