@@ -199,6 +199,10 @@ echo -e "+----------------------------------------------------------+\n"
 rm -Rf ./safe_box/*
 rm -Rf ./saidas/*
 
+mkdir diferencas
+mkdir saidas
+mkdir safe_box
+
 echo -e "Procurando arquivo regalloc.zip... \c"
 if [ ! -e ./regalloc.zip ];
 then
@@ -256,13 +260,11 @@ then
     echo -e "\n\nRealizando Testes..."
     for i in $(ls ./testes/*.txt)
     do
-        mkdir diferencas
-
         echo $i > linha.txt
         name=$(cut -d"/" -f3 linha.txt) 
         echo -ne "   Teste: \e[93m$name\e[39m"
         ./safe_box/$executavel < $i > ./saidas/saida_$name
-        diff ./saidas/saida_$name ./saidas_padrao/"saida_"$name > ./diferencas/"dif_"$name
+        diff ./saidas/saida_$name ./saidas_padrao/"saida_"$name > ./diferencas/"diff_"$name
         rc=$?;
         if [ $rc == 0 ]; 
         then 
@@ -299,8 +301,10 @@ fi
 
 echo -e "\nApagando arquivos temporarios...\n"
 rm -Rf ./safe_box/*
-# rm -Rf ./saidas/*
-# rm -f ./diferencas/*
 rm -Rf linha.txt
 rm -f ./*stackdump*
+# Pode deixar comentado caso queira ver as diferenças de cada teste
+rm -Rf ./saidas/*
+rm -Rf ./diferencas/*
+
 let erro=0
