@@ -285,7 +285,7 @@ then
     echo -e "Corretos: \e[92m$corretos\e[39m"
     echo -e "Incorretos \e[91m$failed\e[39m"
     
-    if [ $corretos == 21 ];
+    if [ $corretos == 22 ];
     then
         DrawTrophy
     fi
